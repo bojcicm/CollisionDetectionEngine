@@ -1,0 +1,102 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Assets">
+      <UniqueIdentifier>322c0295-3ff8-484a-84ae-004caafad5d6</UniqueIdentifier>
+      <Extensions>bmp;fbx;gif;jpg;jpeg;tga;tiff;tif;png</Extensions>
+    </Filter>
+    <Image Include="Assets\Logo.png">
+      <Filter>Assets</Filter>
+    </Image>
+    <Image Include="Assets\SmallLogo.png">
+      <Filter>Assets</Filter>
+    </Image>
+    <Image Include="Assets\StoreLogo.png">
+      <Filter>Assets</Filter>
+    </Image>
+    <Image Include="Assets\SplashScreen.png">
+      <Filter>Assets</Filter>
+    </Image>
+    <Filter Include="Shaders">
+      <UniqueIdentifier>{cc2f1153-68a0-4b4d-9024-690a148a55b6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shaders\ShadersToScreen">
+      <UniqueIdentifier>{8ef443ab-214e-49ea-bb2f-16d2ccc5f482}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shaders\ComputeShader">
+      <UniqueIdentifier>{2b541e35-1d2b-4781-87b1-522ece56652c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Renderer">
+      <UniqueIdentifier>{36b6847f-c675-4bd5-b6b2-76f4520dceb6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Renderer\RenderToTexture">
+      <UniqueIdentifier>{ed4836f4-8f01-4a76-a2d1-4fab4411db41}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shaders\ToTextureShaders">
+      <UniqueIdentifier>{95410a98-d6e9-4df6-ab8f-b1446eb913d3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Renderer\ComputeBlur">
+      <UniqueIdentifier>{52002166-1460-4de8-9feb-721e2084c9af}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Renderer\RenderToScreen">
+      <UniqueIdentifier>{db484fe2-e99c-4995-8dd0-1af3b9ba45d5}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="pch.cpp" />
+    <ClCompile Include="Program.cpp" />
+    <ClCompile Include="Renderer3D.cpp">
+      <Filter>Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="RenderToTexture.cpp">
+      <Filter>Renderer\RenderToTexture</Filter>
+    </ClCompile>
+    <ClCompile Include="ComputeBlur.cpp">
+      <Filter>Renderer\ComputeBlur</Filter>
+    </ClCompile>
+    <ClCompile Include="RenderToScreen.cpp">
+      <Filter>Renderer\RenderToScreen</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="pch.h" />
+    <ClInclude Include="Renderer3D.h">
+      <Filter>Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="RenderToTexture.h">
+      <Filter>Renderer\RenderToTexture</Filter>
+    </ClInclude>
+    <ClInclude Include="ComputeBlur.h">
+      <Filter>Renderer\ComputeBlur</Filter>
+    </ClInclude>
+    <ClInclude Include="RenderToScreen.h">
+      <Filter>Renderer\RenderToScreen</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <AppxManifest Include="Package.appxmanifest" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Basic.Application_TemporaryKey.pfx" />
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="ScreenVertexShader.hlsl">
+      <Filter>Shaders\ShadersToScreen</Filter>
+    </FxCompile>
+    <FxCompile Include="ScreenPixelShader.hlsl">
+      <Filter>Shaders\ShadersToScreen</Filter>
+    </FxCompile>
+    <FxCompile Include="PixelShader.hlsl">
+      <Filter>Shaders\ToTextureShaders</Filter>
+    </FxCompile>
+    <FxCompile Include="VertexShader.hlsl">
+      <Filter>Shaders\ToTextureShaders</Filter>
+    </FxCompile>
+    <FxCompile Include="ComputeShader.hlsl">
+      <Filter>Shaders\ComputeShader</Filter>
+    </FxCompile>
+    <FxCompile Include="VerticalComputeShader.hlsl">
+      <Filter>Shaders\ComputeShader</Filter>
+    </FxCompile>
+  </ItemGroup>
+</Project>
