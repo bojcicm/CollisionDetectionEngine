@@ -48,29 +48,11 @@
     <ClCompile Include="Renderer3D.cpp">
       <Filter>Renderer</Filter>
     </ClCompile>
-    <ClCompile Include="RenderToTexture.cpp">
-      <Filter>Renderer\RenderToTexture</Filter>
-    </ClCompile>
-    <ClCompile Include="ComputeBlur.cpp">
-      <Filter>Renderer\ComputeBlur</Filter>
-    </ClCompile>
-    <ClCompile Include="RenderToScreen.cpp">
-      <Filter>Renderer\RenderToScreen</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
     <ClInclude Include="Renderer3D.h">
       <Filter>Renderer</Filter>
-    </ClInclude>
-    <ClInclude Include="RenderToTexture.h">
-      <Filter>Renderer\RenderToTexture</Filter>
-    </ClInclude>
-    <ClInclude Include="ComputeBlur.h">
-      <Filter>Renderer\ComputeBlur</Filter>
-    </ClInclude>
-    <ClInclude Include="RenderToScreen.h">
-      <Filter>Renderer\RenderToScreen</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -80,23 +62,11 @@
     <None Include="Basic.Application_TemporaryKey.pfx" />
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="ScreenVertexShader.hlsl">
-      <Filter>Shaders\ShadersToScreen</Filter>
-    </FxCompile>
-    <FxCompile Include="ScreenPixelShader.hlsl">
-      <Filter>Shaders\ShadersToScreen</Filter>
-    </FxCompile>
     <FxCompile Include="PixelShader.hlsl">
       <Filter>Shaders\ToTextureShaders</Filter>
     </FxCompile>
     <FxCompile Include="VertexShader.hlsl">
       <Filter>Shaders\ToTextureShaders</Filter>
-    </FxCompile>
-    <FxCompile Include="ComputeShader.hlsl">
-      <Filter>Shaders\ComputeShader</Filter>
-    </FxCompile>
-    <FxCompile Include="VerticalComputeShader.hlsl">
-      <Filter>Shaders\ComputeShader</Filter>
     </FxCompile>
   </ItemGroup>
 </Project>
