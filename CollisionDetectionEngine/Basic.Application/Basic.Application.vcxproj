@@ -193,6 +193,13 @@
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <Image Include="Assets\boy\arms.jpg" />
+    <Image Include="Assets\boy\face.jpg" />
+    <Image Include="Assets\boy\grass.jpg" />
+    <Image Include="Assets\boy\grassNormal.jpg" />
+    <Image Include="Assets\boy\pants.jpg" />
+    <Image Include="Assets\boy\shirt.jpg" />
+    <Image Include="Assets\boy\shoes.jpg" />
     <Image Include="Assets\Logo.png" />
     <Image Include="Assets\SmallLogo.png" />
     <Image Include="Assets\StoreLogo.png" />
@@ -201,6 +208,7 @@
   <ItemGroup>
     <ClInclude Include="pch.h" />
     <ClInclude Include="Renderer3D.h" />
+    <ClInclude Include="resource.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -219,6 +227,10 @@
       <SubType>Designer</SubType>
     </AppxManifest>
     <None Include="Basic.Application_TemporaryKey.pfx" />
+    <Text Include="Assets\boy\boy.md5mesh">
+      <FileType>Document</FileType>
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</DeploymentContent>
+    </Text>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Engine\Engine.vcxproj">
@@ -243,6 +255,9 @@
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
     </FxCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Basic.Application.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

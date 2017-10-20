@@ -9,6 +9,8 @@
 #include "..\..\Engine\Compute Shader.h"
 
 #include "..\..\..\Engine\Models\Mesh Base.h"
+#include "..\..\Engine\Models\Basic Shapes\Cubes.h"
+#include "..\..\..\Engine\Models\MD5Model\Md5Model.h"
 
 #include "..\..\..\Engine\Scene\Transforms\World Transforms.h"
 #include "..\..\..\Engine\Scene\Transforms\View Transform.h"
@@ -22,7 +24,7 @@ public:
 	std::shared_ptr<VertexShader<DirectX::VertexPositionColor>> _vertexshader;
 	std::shared_ptr<PixelShader> _pixelshader;
 
-	std::shared_ptr<MeshBase<DirectX::VertexPositionColor, unsigned short >> _model;
+	std::shared_ptr<Model3D> _model;
 
 	std::shared_ptr<WorldTransforms> _world;
 	std::shared_ptr<ViewTransform> _view;

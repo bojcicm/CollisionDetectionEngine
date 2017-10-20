@@ -21,7 +21,7 @@ namespace vxe {
 
 		void Reset()
 		{
-			DebugPrint(std::string("\t BufferBase::Reset() ...\n"));
+			//DebugPrint(std::string("\t BufferBase::Reset() ...\n"));
 
 			_buffer.Reset();
 		}

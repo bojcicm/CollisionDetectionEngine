@@ -113,6 +113,7 @@
     <ClCompile Include="Scene\Input\Input Controller.cpp">
       <Filter>Scene\Input</Filter>
     </ClCompile>
+    <ClCompile Include="Models\MD5Model\Md5Model.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -257,6 +258,8 @@
     <ClInclude Include="Compute Shader.h">
       <Filter>Pipeline Stages\Shaders</Filter>
     </ClInclude>
+    <ClInclude Include="Models\MD5Model\Md5Model.h" />
+    <ClInclude Include="Models\MD5Model\ModelSubset.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Lighting\HLSL\Directional Light.hlsli">

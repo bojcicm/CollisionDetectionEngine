@@ -15,7 +15,9 @@
 #include "..\Third Party\DirectX Tool Kit\VertexTypes.h"
 
 #include "..\Pipeline Resources\Buffers\Vertex Buffer.h"
-#include "..\pipeline Resources\Buffers\Index Buffer.h"
+#include "..\Pipeline Resources\Buffers\Index Buffer.h"
+
+#include "..\Core\Common\DirectXHelper.h"
 
 namespace vxe {
 

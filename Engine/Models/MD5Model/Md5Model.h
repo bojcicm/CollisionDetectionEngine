@@ -3,8 +3,6 @@
 #include "pch.h"
 #include "ModelSubset.h"
 
-using namespace DirectX;
-
 namespace vxe {
 	class Model3D {
 
@@ -12,7 +10,7 @@ namespace vxe {
 		int numberOfSubsets;
 		int numberOfJoints;
 
-		XMMATRIX modelWorld;
+		DirectX::XMMATRIX modelWorld;
 		std::vector<Joint> joints;
 		std::vector<std::shared_ptr<ModelSubset>> subsets;
 

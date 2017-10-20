@@ -54,6 +54,7 @@
     <ClInclude Include="Renderer3D.h">
       <Filter>Renderer</Filter>
     </ClInclude>
+    <ClInclude Include="resource.h" />
   </ItemGroup>
   <ItemGroup>
     <AppxManifest Include="Package.appxmanifest" />
@@ -68,5 +69,34 @@
     <FxCompile Include="VertexShader.hlsl">
       <Filter>Shaders\ToTextureShaders</Filter>
     </FxCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="Assets\boy\arms.jpg">
+      <Filter>Assets</Filter>
+    </Image>
+    <Image Include="Assets\boy\face.jpg">
+      <Filter>Assets</Filter>
+    </Image>
+    <Image Include="Assets\boy\grass.jpg">
+      <Filter>Assets</Filter>
+    </Image>
+    <Image Include="Assets\boy\grassNormal.jpg">
+      <Filter>Assets</Filter>
+    </Image>
+    <Image Include="Assets\boy\pants.jpg">
+      <Filter>Assets</Filter>
+    </Image>
+    <Image Include="Assets\boy\shirt.jpg">
+      <Filter>Assets</Filter>
+    </Image>
+    <Image Include="Assets\boy\shoes.jpg">
+      <Filter>Assets</Filter>
+    </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Basic.Application.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="Assets\boy\boy.md5mesh" />
   </ItemGroup>
 </Project>

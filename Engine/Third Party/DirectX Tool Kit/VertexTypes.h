@@ -368,4 +368,10 @@ namespace DirectX
 		static const int InputElementCount = 4;
 		static const D3D11_INPUT_ELEMENT_DESC InputElements[InputElementCount];
 	};
+
+	struct VertexPositionNormalTangentTextureWeight : VertexPositionNormalTangentTexture 
+	{
+		int StartWeight;
+		int WeightCount;
+	};
 }
