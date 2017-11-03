@@ -114,6 +114,7 @@
       <Filter>Scene\Input</Filter>
     </ClCompile>
     <ClCompile Include="Models\MD5Model\Md5Model.cpp" />
+    <ClCompile Include="Models\MD5Model\Md5Animation.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -259,7 +260,10 @@
       <Filter>Pipeline Stages\Shaders</Filter>
     </ClInclude>
     <ClInclude Include="Models\MD5Model\Md5Model.h" />
-    <ClInclude Include="Models\MD5Model\ModelSubset.h" />
+    <ClInclude Include="Models\MD5Model\Md5Mesh.h" />
+    <ClInclude Include="Models\MD5Model\Md5Structs.h" />
+    <ClInclude Include="Models\MD5Model\Md5AnimationStructs.h" />
+    <ClInclude Include="Models\MD5Model\Md5Animation.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Lighting\HLSL\Directional Light.hlsli">

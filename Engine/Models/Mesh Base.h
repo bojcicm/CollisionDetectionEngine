@@ -44,7 +44,8 @@ namespace vxe {
 
 				_topology = topology;
 				_vertexcount = (unsigned int) vertices.size();
-				_vertices = &vertices[0];
+				_vertices2 = vertices;
+				_vertices = &_vertices2[0];
 
 				return concurrency::create_task([this, device, vertices, indices]() {
 
@@ -59,8 +60,9 @@ namespace vxe {
 						_indexed = true;
 
 						_indexcount = (unsigned) indices.size();
-						_indices = const_cast<U*> (&indices[0]);
-						_indexbuffer = std::make_shared<IndexBuffer<U>>(device, violent_cast<void *> (&indices[0]), _indexcount);
+						_indices2 = indices;
+						_indices = &_indices[0];
+						_indexbuffer = std::make_shared<IndexBuffer<U>>(device, violent_cast<void *> (_indices), _indexcount);
 
 						if (typeid(U) == typeid (unsigned short)) {
 							_format = DXGI_FORMAT_R16_UINT;
@@ -75,7 +77,45 @@ namespace vxe {
 			}
 
 			// Model is hardcoded inn memory
-			virtual concurrency::task<void> CreateAsync(_In_ ID3D11Device2* device) = 0;
+			virtual concurrency::task<void> CreateAsync(_In_ ID3D11Device2* device)
+			{
+				DebugPrint(std::string("\t MeshBase<") + typeid(T).name() +
+					std::string(",") + typeid(U).name() + std::string(">::CreateAsync() ...\n"));
+				
+				auto topology = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+				DebugPrint(std::string("\t\t Primitive Topology: ") + std::to_string(topology) + std::string("\n"));
+
+				_topology = topology;
+				_vertices = &_vertices2[0];
+				_vertexcount = (unsigned int)_vertices2.size();
+				_indices = &_indices2[0];
+				_indexcount = (unsigned)_indices2.size();
+
+				return concurrency::create_task([this, device]() {
+
+					DebugPrint(std::string("\t -- A lambda: Creating a VB ... \n"));
+
+					//	if (vertices.empty()) throw std::exception("...");
+
+					_vertexbuffer = std::make_shared<VertexBuffer<T>>(device, _vertices, _vertexcount);
+
+					if (!_indices2.empty()) {
+						DebugPrint(std::string("\t -- A lambda: Creating an IB ... \n"));
+						_indexed = true;						
+
+						_indexbuffer = std::make_shared<IndexBuffer<U>>(device, violent_cast<void *>(_indices), _indexcount);
+
+						if (typeid(U) == typeid (unsigned short)) {
+							_format = DXGI_FORMAT_R16_UINT;
+							DebugPrint(std::string("\t\t Index Format: DXGI_FORMAT_R16_UINT \n"));
+						}
+						else {
+							_format = DXGI_FORMAT_R32_UINT;
+							DebugPrint(std::string("\t\t Index Format: DXGI_FORMAT_R32_UINT \n"));
+						}
+					}
+				});
+			};
 
 			// Creation from a file
 			virtual concurrency::task<void> LoadAsync(_In_ ID3D11Device2* device, const std::wstring& filename)
@@ -126,6 +166,11 @@ namespace vxe {
 			// Creation by parsing from memory
 			virtual concurrency::task<void> CreateAsync(_In_ ID3D11Device2* device, const std::vector<char>& memory) = 0;
 
+			virtual void UpdateVertexBuffer(_In_ ID3D11DeviceContext2* context, const T& data)
+			{
+				_vertexbuffer->Update(context, data);
+			}
+
 			virtual void BindVertexBuffer(_In_ ID3D11DeviceContext2* context, 
 				int slot = 0, 
 				unsigned count = 1, 
@@ -156,8 +201,9 @@ namespace vxe {
 				if (_indexed) context->DrawIndexed(_indexcount, startindex, startvertex);
 			}
 
-			T* GetVertices() { return _vertices; }
-			unsigned GetVertexCount() { return _vertexcount; }
+			T* GetVertices() { return &_vertices2[0]; }
+			U* GetIndices() { return &_indices2[0]; }
+			unsigned GetVertexCount() { return _vertices2.size(); }
 
 			void Reset()
 			{
@@ -171,11 +217,15 @@ namespace vxe {
 			unsigned _vertexcount;
 			std::shared_ptr<VertexBuffer<T>> _vertexbuffer;
 			T* _vertices;
+			std::vector<T> _vertices2;
+			//T* _verticesPtr;
 
 			bool _indexed;
 			unsigned _indexcount;
 			std::shared_ptr<IndexBuffer<U> > _indexbuffer;
 			U* _indices;
+			std::vector<U> _indices2;
+			//U* _indicesPtr;
 			DXGI_FORMAT _format;
 
 			D3D11_PRIMITIVE_TOPOLOGY _topology;

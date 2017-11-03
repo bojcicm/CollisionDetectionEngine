@@ -15,7 +15,7 @@ cbuffer ProjectionTransforms : register(b2)
 struct VertexShaderInput
 {
 	float3 pos : SV_Position;
-	vector<float, 4> color : COLOR;
+	float4 color : COLOR;
 };
 struct VertexShaderOutput
 {

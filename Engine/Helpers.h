@@ -23,6 +23,25 @@ namespace vxe {
 		return DirectX::XMMatrixInverse(&det, A);
 	}
 
+	inline void ComputeQuaternionW(DirectX::XMFLOAT4& quaternion)
+	{
+		float t = 1.0f - (quaternion.x * quaternion.x) - (quaternion.y * quaternion.y) - (quaternion.z * quaternion.z);
+		if (t < 0.0f)
+		{
+			quaternion.w = 0.0f;
+		}
+		else
+		{
+			quaternion.w = -sqrtf(t);
+		}
+	}
+
+	inline void RemoveQuotes(std::wstring& value)
+	{
+		value.erase(0, 1);
+		value.erase(value.size() - 1, 1);
+	}
+
 #if defined (_DEBUG)
 
 	inline std::string ToString(DirectX::XMFLOAT3 *vector)

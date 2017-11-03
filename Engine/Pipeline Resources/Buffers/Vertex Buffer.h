@@ -16,7 +16,7 @@ namespace vxe {
 
 	// a type of vertex
 	template <typename T>
-	class VertexBuffer : public BufferBase {
+	class VertexBuffer	 : public BufferBase {
 
 	public:
 		using value_type = T;
@@ -49,6 +49,17 @@ namespace vxe {
 		{
 			//DebugPrint(std::string("\t VertexBuffer<") + typeid(T).name() + std::string(">::Bind() ...\n"));
 			context->IASetVertexBuffers(slot, count, _buffer.GetAddressOf(), &_vertexsize, &offset);
+		}
+
+		void Update(_In_ ID3D11DeviceContext2* context, const T& data,
+			unsigned subresource = 0,
+			const D3D11_BOX* box = nullptr,
+			unsigned rawpitch = 0,
+			unsigned depthpitch = 0)
+		{
+			//DebugPrint(std::string ("\t ConstantBuffer<") + typeid(T).name() + std::string(">::Update() ...\n"));
+
+			context->UpdateSubresource(_buffer.Get(), subresource, box, &data, rawpitch, depthpitch);
 		}
 
 	private:

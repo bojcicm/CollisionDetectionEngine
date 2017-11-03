@@ -25,11 +25,10 @@ void Renderer3D::CreateDeviceDependentResources()
 	_pixelshader = make_shared<PixelShader>();
 	tasks.push_back(_pixelshader->CreateAsync(device, L"PixelShader.cso"));
 	
-	_model = make_shared<Model3D>();
-	tasks.push_back(_model->CreateAsync(device, L"boy.md5mesh"));
+	_model = make_shared<MD5Model>();
+	tasks.push_back(_model->CreateAsync(device, L"boy.md5mesh", L"boy.md5anim"));
 
 	_world = make_shared<WorldTransforms>(device);
-	_world->Translate(0.0f, 3.0f, 10.0f);
 
 	when_all(tasks.begin(), tasks.end()).then([this]()
 	{
@@ -45,7 +44,7 @@ void Renderer3D::CreateWindowSizeDependentResources()
 	Size outputSize = m_deviceResources->GetOutputSize();
 
 	_view = make_shared<ViewTransform>(device);
-	static const XMVECTORF32 eye = { 0.0f, 50.0f, 170.0f, 0.0f };
+	static const XMVECTORF32 eye = { 0.0f, 50.0f, 100.0f, 0.0f };
 	static const XMVECTORF32 at = { 0.0f, 0.0f, 0.0f, 0.0f };
 	static const XMVECTORF32 up = { 0.0f, 1.0f, 0.0f, 0.0f };
 	_view->SetView(eye, at, up);
@@ -64,6 +63,12 @@ void Renderer3D::CreateWindowSizeDependentResources()
 
 }
 
+void Renderer3D::Update(DX::StepTimer const& timer)
+{
+	auto context = m_deviceResources->GetD3DDeviceContext();
+	_model->Update(timer);
+}
+
 void Renderer3D::Render()
 {
 	if (!m_loadingComplete) {
@@ -77,10 +82,7 @@ void Renderer3D::Render()
 
 	_vertexshader->Bind(context);
 	_pixelshader->Bind(context);
-	for (auto& subset : _model->subsets)
-	{
-		Draw((std::shared_ptr<vxe::MeshBase<VertexPositionNormalTangentTextureWeight, unsigned short>>) subset, _world);
-	}
+	_model->Render(context);
 
 	m_deviceResources->SetRasterizerState();
 }

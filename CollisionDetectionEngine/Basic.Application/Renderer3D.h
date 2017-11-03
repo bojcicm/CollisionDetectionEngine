@@ -24,7 +24,7 @@ public:
 	std::shared_ptr<VertexShader<DirectX::VertexPositionColor>> _vertexshader;
 	std::shared_ptr<PixelShader> _pixelshader;
 
-	std::shared_ptr<Model3D> _model;
+	std::shared_ptr<MD5Model> _model;
 
 	std::shared_ptr<WorldTransforms> _world;
 	std::shared_ptr<ViewTransform> _view;
@@ -36,6 +36,7 @@ public:
 	}
 	void CreateDeviceDependentResources();
 	void CreateWindowSizeDependentResources();
+	void Update(DX::StepTimer const & timer);
 	void ReleaseDeviceDependentResources();
 	void Render();
 	void Rotate(float radians)

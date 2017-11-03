@@ -369,9 +369,23 @@ namespace DirectX
 		static const D3D11_INPUT_ELEMENT_DESC InputElements[InputElementCount];
 	};
 
-	struct VertexPositionNormalTangentTextureWeight : VertexPositionNormalTangentTexture 
+	struct VertexPositionNormalTangentTextureWeight	 : VertexPositionNormalColorTexture
 	{
-		int StartWeight;
-		int WeightCount;
+		VertexPositionNormalTangentTextureWeight() 
+		{ }
+
+		//TODO: Ne spremaju se? treba vidit kako se spremaju i castat ih sa intovima za animacije
+		uint32_t startweight;
+		uint32_t weightcount;
+
+		VertexPositionNormalTangentTextureWeight(XMFLOAT3 const& position, XMFLOAT3 const& normal, XMFLOAT4 const& tangent, XMFLOAT2 const& textureCoordinate, uint32_t startWeight, uint32_t weightCount)
+			: startweight(startWeight),
+			weightcount(weightCount),
+			VertexPositionNormalColorTexture(position, normal, tangent, textureCoordinate)			
+		{
+		}
+
+		static const int InputElementCount = 6;
+		static const D3D11_INPUT_ELEMENT_DESC InputElements[InputElementCount];
 	};
 }
