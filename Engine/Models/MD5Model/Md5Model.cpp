@@ -8,39 +8,52 @@ namespace vxe {
 
 	void MD5Model::Update(DX::StepTimer const& timer)
 	{
-		DebugPrint(std::string("Model : Updated \n"));
 		auto deltaTime = timer.GetTotalSeconds();
 
-		_localWorld->RotateY(deltaTime);
-	}
-
-	void MD5Model::Reset()
-	{
-		for (auto m : _meshes)
+		if (m_hasAnimation)
 		{
-			m->Reset();
+			//_animation->Update(deltaTime);
+
+			for (auto i = 0; i < _meshes.size(); i++)
+			{
+				PrepareMesh(_meshes[i]);
+			}
 		}
 	}
 
 	void MD5Model::Render(_In_ ID3D11DeviceContext2* context)
 	{
+		_localWorld->Update(context);
+		_localWorld->GetConstantBuffer()->Bind(context);
 		for (auto& m : _meshes)
 		{
-			_localWorld->Update(context);
-			_localWorld->GetConstantBuffer()->Bind(context);
-			m->BindVertexBuffer(context);
-			m->BindIndexBuffer(context);
-			m->DrawIndexed(context);
+			RenderMesh(context, m);
 		}
+		
+		//_animation->Render(context);
+	}
+
+	void MD5Model::RenderMesh(_In_ ID3D11DeviceContext2* context, const std::shared_ptr<Md5Mesh>& mesh)
+	{
+		mesh->UpdateVertexBuffer(context);
+		mesh->BindVertexBuffer(context);
+		mesh->BindIndexBuffer(context);
+		mesh->DrawIndexed(context);
 	}
 
 	concurrency::task<void> MD5Model::CreateAsync(ID3D11Device2 * device, std::wstring filename, std::wstring animationFileName)
 	{
 		DebugPrint(std::string("Model : Loading... \n"));
-		return concurrency::create_task(LoadMd5Model(device, filename)).then([this, animationFileName]() 
+		return concurrency::create_task(LoadMd5Model(device, filename)).then([this, animationFileName, device]() 
 		{
-			if(!animationFileName.empty())
-				LoadMd5Animation(animationFileName);
+			if (!animationFileName.empty()) 
+			{
+				concurrency::create_task(LoadMd5Animation(device, animationFileName))
+				.then([this]() 
+				{
+					m_hasAnimation = true; 
+				}).wait();
+			}
 		});
 	}
 
@@ -264,13 +277,13 @@ namespace vxe {
 		});
 	}
 
-	concurrency::task<void> MD5Model::LoadMd5Animation(std::wstring filename)
+	concurrency::task<void> MD5Model::LoadMd5Animation(ID3D11Device2 * device, std::wstring filename)
 	{
 		DebugPrint(std::wstring(L"Model : Loading animation - " + filename + L" \n"));
 		_animation = std::make_shared<Md5Animation>();
-		return concurrency::create_task(DX::ReadDataAsync(filename)).then([this, filename](std::vector<byte> data)
+		return concurrency::create_task(DX::ReadDataAsync(filename)).then([this, device](std::vector<byte> data)
 		{
-			_animation->Md5Animation::LoadAnimation(data);
+			_animation->LoadAnimation(data, device);
 			DebugPrint(std::string("\t Model : Loading Md5 Animation is complete! \n"));
 		});
 	}
@@ -282,10 +295,7 @@ namespace vxe {
 		{
 			auto& vertex = vertices[i];
 			auto tempPosition = DirectX::XMFLOAT3(0, 0, 0);
-			auto tempColor = DirectX::XMFLOAT4(0, 0, 0, 0);
 			vertex.position = tempPosition;
-			vertex.color = tempColor;
-			vertex.color = DirectX::XMFLOAT4(DirectX::Colors::Yellow);
 			auto vertexWeightInfo = mesh->vertexWeightsInfo[i];
 
 			for (auto j = 0; j < vertexWeightInfo.numberOfWeights; j++)
@@ -311,6 +321,52 @@ namespace vxe {
 				// so that it appears to have been rotated around the joints position). Finally we multiply the answer with the weights bias,
 				// or how much control the weight has over the final vertices position. All weight's bias effecting a single vertex's position
 				// must add up to 1.
+			}
+		}
+	}
+
+	void MD5Model::PrepareMesh(shared_ptr<Md5Mesh> mesh, shared_ptr<Md5Animation> animation)
+	{
+		auto vertices = mesh->GetVertices();
+		auto skeleton = animation->GetSkeleton();
+
+		for (auto i = 0; i < mesh->GetVertexCount(); i++)
+		{
+			auto& vertex = vertices[i];
+			vertex.position = DirectX::XMFLOAT3(0, 0, 0);
+
+			auto vertexWeightInfo = mesh->vertexWeightsInfo[i];
+
+			for (auto j = 0; j < vertexWeightInfo.numberOfWeights; j++)
+			{
+				auto& weight = mesh->weights[vertexWeightInfo.startingWeightId + j];
+				auto& joint = skeleton->joints[weight.jointId];
+
+				//update vertex position 
+
+				auto weightPosition = DirectX::XMLoadFloat3(&weight.position);
+				auto jointOrientation = DirectX::XMLoadFloat4(&joint.orientation);
+
+				auto tempJointOrientationConjugate = DirectX::XMQuaternionInverse(jointOrientation);
+
+				XMFLOAT3 rotatedPoint;
+				XMStoreFloat3(&rotatedPoint, XMQuaternionMultiply(XMQuaternionMultiply(jointOrientation, weightPosition), tempJointOrientationConjugate));
+
+				vertex.position.x += (joint.position.x + rotatedPoint.x) * weight.bias;
+				vertex.position.y += (joint.position.y + rotatedPoint.y) * weight.bias;
+				vertex.position.z += (joint.position.z + rotatedPoint.z) * weight.bias;
+
+				//update normals
+				
+				//auto weightNormal = DirectX::XMLoadFloat3(&weight.normal);
+				//// Rotate the normal
+				//XMStoreFloat3(&rotatedPoint, XMQuaternionMultiply(XMQuaternionMultiply(jointOrientation, weightNormal), tempJointOrientationConjugate));
+
+				//vertex.normal.x -= rotatedPoint.x * weight.bias;
+				//vertex.normal.y -= rotatedPoint.y * weight.bias;
+				//vertex.normal.z -= rotatedPoint.z * weight.bias;
+				//XMStoreFloat3(&vertex.normal, XMVector3Normalize(XMLoadFloat3(&vertex.normal)));
+
 			}
 		}
 	}

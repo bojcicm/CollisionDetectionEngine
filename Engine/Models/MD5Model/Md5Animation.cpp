@@ -3,12 +3,13 @@
 #include "pch.h"
 #include "Md5Animation.h"
 #include "Md5AnimationStructs.h"
+#include "../../Third Party/DirectX Tool Kit/VertexTypes.h"
 #include "../../Helpers.h"
 #include "../../Utilities.h"
 
 namespace vxe {
 	
-	void Md5Animation::LoadAnimation(const std::vector<byte>& data)
+	void Md5Animation::LoadAnimation(const std::vector<byte>& data, ID3D11Device2 * device)
 	{
 		std::wstringstream fileIn(std::wstring(data.begin(), data.end()));
 		std::wstring checkString;					// Stores the next string from our file
@@ -72,6 +73,7 @@ namespace vxe {
 			else if (checkString == L"hierarchy")
 			{
 				readString(); //skip '{'
+
 				for (auto i = 0; i < numJoints; i++)
 				{
 					AnimationJointInfo joint;
@@ -109,25 +111,29 @@ namespace vxe {
 			else if (checkString == L"baseframe")
 			{
 				readString();
-				ignoreRestOfLine();
 
 				for (auto i = 0; i < numJoints; i++)
 				{
-					BaseFrame baseFrame;
+					Point baseFrame;
 					readString();
 
-					fileIn >> baseFrame.position.x >> baseFrame.position.z >> baseFrame.position.y;
+					fileIn >> baseFrame.position.x >> baseFrame.position.y >> baseFrame.position.z;
 
 					readString(); readString();
 
-					fileIn >> baseFrame.orientation.x >> baseFrame.orientation.z >> baseFrame.orientation.y;
+					fileIn >> baseFrame.orientation.x >> baseFrame.orientation.y >> baseFrame.orientation.z;
+					
 					readString();
+					
+					ComputeQuaternionW(baseFrame.orientation);
 
 					baseFrameJoints.push_back(baseFrame);
 				}
 			}
 			else if (checkString == L"frame")
 			{
+				DebugPrint(std::string("Model : Parsing animation data - \t Building frame... \n"));
+
 				FrameData tempFrame;
 				fileIn >> tempFrame.frameID;
 
@@ -143,14 +149,65 @@ namespace vxe {
 				frameData.push_back(tempFrame);
 
 				// Build a skeleton for this frame
-				BuildFrameSkeleton(skeletons, jointInfoList, baseFrameJoints, tempFrame);
+				BuildFrameSkeleton(tempFrame);
 
 				ignoreRestOfLine();
 			}
-		}
+		} // while fileIn.eof
+
+		frameSkeleton = skeletons[0];
+		frameDuration = 100.0f / (float)frameRate;
+		animationDuration = frameDuration * (float)numFrames;
+		animationTime = 1.0f;
+
+		//_animationMesh = std::make_shared<Md5AnimationSkeletonMesh>();
+		//_animationMesh->CreateAsync(device, &frameSkeleton.joints).wait();
 	}
 
-	void Md5Animation::BuildFrameSkeleton(FrameSkeletonList& skeletons, const AnimationJointInfoList& jointInfos, const BaseFrameList& baseFrames, const FrameData& frame)
+	void Md5Animation::Update(float deltaTime)
+	{
+		if (numFrames < 1) return;
+
+		animationTime += deltaTime;
+
+		while (animationTime > animationDuration) animationTime -= animationDuration;
+		while (animationTime < 0.0f) animationTime += animationDuration;
+
+		auto frameNumber = animationTime * (float)frameRate;
+		auto frame0 = (int)floorf(frameNumber) % numFrames;
+		auto frame1 = frame0 + 1;
+		if (frame0 == numFrames - 1)
+			frame1 = 0;
+
+		auto interpolate = frameNumber - frame0;
+
+		auto& skeleton0 = skeletons[frame0];
+		auto& skeleton1 = skeletons[frame1];
+
+		frameSkeleton.joints.clear();
+		for (auto i = 0; i < numJoints; i++)
+		{
+			auto finalJoint = SkeletonJoint();
+			const auto& joint0 = skeleton0.joints[i];
+			const auto& joint1 = skeleton1.joints[i];
+
+			auto joint0Orientation = DirectX::XMLoadFloat4(&joint0.orientation);
+			auto joint1Orientation = DirectX::XMLoadFloat4(&joint1.orientation);
+
+			finalJoint.parentId = joint0.parentId;
+			finalJoint.position.x = joint0.position.x + (interpolate * (joint1.position.x - joint0.position.x));
+			finalJoint.position.y = joint0.position.y + (interpolate * (joint1.position.y - joint0.position.y));
+			finalJoint.position.z = joint0.position.z + (interpolate * (joint1.position.z - joint0.position.z));
+
+			XMStoreFloat4(&finalJoint.orientation, DirectX::XMQuaternionSlerp(joint0Orientation, joint1Orientation, interpolate));
+
+			frameSkeleton.joints.push_back(finalJoint);
+		}
+
+		//InterpolateSkeletons(frameSkeleton, skeletons[frame0], skeletons[frame1], interpolate);
+	}
+
+	void Md5Animation::BuildFrameSkeleton(const FrameData& frame)
 	{
 		FrameSkeleton skeleton;
 
@@ -160,55 +217,52 @@ namespace vxe {
 			const auto& jointInfo = jointInfoList[i];
 			
 			SkeletonJoint animatedJoint;
-			animatedJoint.orientation = baseFrames[i].orientation;
-			animatedJoint.position = baseFrames[i].position;
+			animatedJoint.orientation = baseFrameJoints[i].orientation;
+			animatedJoint.position = baseFrameJoints[i].position;
 			animatedJoint.parentId = jointInfo.parentID;
+			
+			//if (jointInfo.flags & 1) // Pos.x
+			//{
+			//	animatedJoint.position.x = frame.frameData[jointInfo.startIndex + j++];
+			//}
+			//if (jointInfo.flags & 2) // Pos.z RH vs LH here should be Pos.y
+			//{
+			//	animatedJoint.position.y = frame.frameData[jointInfo.startIndex + j++];
+			//}
+			//if (jointInfo.flags & 4) // Pos.y RH vs LH here should be Pos.z
+			//{
+			//	animatedJoint.position.z = frame.frameData[jointInfo.startIndex + j++];
+			//}
+			//if (jointInfo.flags & 8) // Orient.x
+			//{
+			//	animatedJoint.orientation.x = frame.frameData[jointInfo.startIndex + j++];
+			//}
+			//if (jointInfo.flags & 16) // Orient.y
+			//{
+			//	animatedJoint.orientation.y = frame.frameData[jointInfo.startIndex + j++];
+			//}
+			//if (jointInfo.flags & 32) // Orient.z
+			//{
+			//	animatedJoint.orientation.z = frame.frameData[jointInfo.startIndex + j++];
+			//}
 
-			if (jointInfo.flags & 1) // Pos.x
-			{
-				animatedJoint.position.x = frame.frameData[jointInfo.startIndex + j++];
-			}
-			if (jointInfo.flags & 2) // Pos.y
-			{
-				animatedJoint.position.y = frame.frameData[jointInfo.startIndex + j++];
-			}
-			if (jointInfo.flags & 4) // Pos.x
-			{
-				animatedJoint.position.z = frame.frameData[jointInfo.startIndex + j++];
-			}
-			if (jointInfo.flags & 8) // Orient.x
-			{
-				animatedJoint.orientation.x = frame.frameData[jointInfo.startIndex + j++];
-			}
-			if (jointInfo.flags & 16) // Orient.y
-			{
-				animatedJoint.orientation.y = frame.frameData[jointInfo.startIndex + j++];
-			}
-			if (jointInfo.flags & 32) // Orient.z
-			{
-				animatedJoint.orientation.z = frame.frameData[jointInfo.startIndex + j++];
-			}
+			//ComputeQuaternionW(animatedJoint.orientation);
 
-			ComputeQuaternionW(animatedJoint.orientation);
+			//if (animatedJoint.parentId >= 0) // Has a parent joint
+			//{
+			//	auto& parentJoint = skeleton.joints[animatedJoint.parentId];
+			//	auto parentJointPosition = DirectX::XMLoadFloat3(&parentJoint.position);
+			//	auto parentJointOrientation = DirectX::XMLoadFloat4(&parentJoint.orientation);
+			//	auto animatedJointPosition = DirectX::XMLoadFloat3(&animatedJoint.position);
+			//	auto animatedJointOrientation = DirectX::XMLoadFloat4(&animatedJoint.orientation);
+			//	
+			//	auto rotPos = DirectX::XMVectorMultiply(parentJointOrientation, animatedJointPosition);
 
-			if (animatedJoint.parentId >= 0) // Has a parent joint
-			{
-				auto& parentJoint = skeleton.joints[animatedJoint.parentId];
-				auto parentJointOrientation = DirectX::XMLoadFloat4(&parentJoint.orientation);
-				auto animatedJointPosition = DirectX::XMLoadFloat3(&animatedJoint.position);
-				
-				//joint.orientation * weight.position
-				auto rotatedPositionOfWeight = DirectX::XMQuaternionMultiply(parentJointOrientation, animatedJointPosition);
+			//	DirectX::XMStoreFloat3(&parentJoint.position, DirectX::XMVectorAdd(parentJointPosition, rotPos));
 
-				DirectX::XMStoreFloat3(&animatedJoint.position, DirectX::XMVectorAdd(DirectX::XMLoadFloat3(&parentJoint.position), rotatedPositionOfWeight));
-
-				auto parentOrientMulWithJointOrientNormalized = DirectX::XMVector4Normalize(
-					DirectX::XMVectorMultiply(
-						parentJointOrientation, 
-						DirectX::XMLoadFloat4(&animatedJoint.orientation)
-				));
-				DirectX::XMStoreFloat4(&animatedJoint.orientation, parentOrientMulWithJointOrientNormalized);
-			}
+			//	auto newOrientation = DirectX::XMVectorMultiply(parentJointOrientation, animatedJointOrientation);
+			//	DirectX::XMStoreFloat4(&animatedJoint.orientation, DirectX::XMQuaternionNormalize(newOrientation));
+			//}
 
 			skeleton.joints.push_back(animatedJoint);
 		}
@@ -216,4 +270,35 @@ namespace vxe {
 		skeletons.push_back(skeleton);
 	}
 
+	void Md5Animation::InterpolateSkeletons(FrameSkeleton& finalSkeleton, const FrameSkeleton& frameSkeleton0, const FrameSkeleton& frameSkeleton1, float fInterpolate)
+	{
+		for (auto i = 0; i < numJoints; i++)
+		{
+			auto& finalJoint = finalSkeleton.joints[i];
+			finalJoint = SkeletonJoint();
+
+			const auto& joint0 = frameSkeleton0.joints[i];
+			const auto& joint1 = frameSkeleton1.joints[i];
+
+			auto joint0Orientation = DirectX::XMLoadFloat4(&joint0.orientation);
+			auto joint1Orientation = DirectX::XMLoadFloat4(&joint1.orientation);
+
+			finalJoint.parentId = joint0.parentId;
+			finalJoint.position.x = joint0.position.x + (fInterpolate * (joint1.position.x - joint0.position.x));
+			finalJoint.position.y = joint0.position.y + (fInterpolate * (joint1.position.y - joint0.position.y));
+			finalJoint.position.z = joint0.position.z + (fInterpolate * (joint1.position.z - joint0.position.z));
+
+			XMStoreFloat4(&finalJoint.orientation, DirectX::XMQuaternionSlerp(joint0Orientation, joint1Orientation, fInterpolate));
+		}
+	}
+
+	void Md5Animation::Render(_In_ ID3D11DeviceContext2* context)
+	{
+		auto joints = &(GetSkeleton()->joints);
+		_animationMesh->UpdateSkeletonMesh(context, joints);
+		
+		_animationMesh->BindVertexBuffer(context);
+		_animationMesh->BindIndexBuffer(context);
+		_animationMesh->DrawIndexed(context);
+	}
 }

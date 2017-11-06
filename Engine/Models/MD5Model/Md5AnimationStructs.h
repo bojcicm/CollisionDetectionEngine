@@ -19,12 +19,6 @@ namespace vxe {
 		int flags;
 		int startIndex;
 	};
-
-	struct BaseFrame 
-	{
-		DirectX::XMFLOAT3 position;
-		DirectX::XMFLOAT4 orientation;
-	};
 	
 	struct FrameData
 	{
@@ -32,16 +26,12 @@ namespace vxe {
 		std::vector<float> frameData;
 	};
 
-	struct SkeletonJoint
+	struct SkeletonJoint : Point
 	{
-		SkeletonJoint()
-			: parentId(-1)
-			, position(0)
+		SkeletonJoint() : Point(), parentId(-1)
 		{}
 
 		int parentId;
-		DirectX::XMFLOAT3 position;
-		DirectX::XMFLOAT4 orientation;
 	};
 	typedef std::vector<SkeletonJoint> SkeletonJointList;
 
@@ -52,7 +42,6 @@ namespace vxe {
 
 	typedef std::vector<BoundingBox> BoundingBoxList;
 	typedef std::vector<AnimationJointInfo> AnimationJointInfoList;
-	typedef std::vector<BaseFrame> BaseFrameList;
 	typedef std::vector<FrameData> FrameDataList;
 	typedef std::vector<FrameSkeleton> FrameSkeletonList;
 }

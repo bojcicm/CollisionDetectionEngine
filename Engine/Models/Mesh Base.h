@@ -30,7 +30,7 @@ namespace vxe {
 			using value_type1 = T;
 			using value_type2 = U;
 
-			MeshBase() : _vertexbuffer{ nullptr }, _indexbuffer{ nullptr }, _indexed{ false } { }
+			MeshBase() : _vertexbuffer{ nullptr }, _indexbuffer{ nullptr }, _indexed{ false }, _topology{ D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST } { }
 
 			concurrency::task<void> CreateAsync(_In_ ID3D11Device2* device,
 				std::vector<T>& vertices,
@@ -82,10 +82,8 @@ namespace vxe {
 				DebugPrint(std::string("\t MeshBase<") + typeid(T).name() +
 					std::string(",") + typeid(U).name() + std::string(">::CreateAsync() ...\n"));
 				
-				auto topology = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
-				DebugPrint(std::string("\t\t Primitive Topology: ") + std::to_string(topology) + std::string("\n"));
+				DebugPrint(std::string("\t\t Primitive Topology: ") + std::to_string(_topology) + std::string("\n"));
 
-				_topology = topology;
 				_vertices = &_vertices2[0];
 				_vertexcount = (unsigned int)_vertices2.size();
 				_indices = &_indices2[0];
@@ -166,9 +164,9 @@ namespace vxe {
 			// Creation by parsing from memory
 			virtual concurrency::task<void> CreateAsync(_In_ ID3D11Device2* device, const std::vector<char>& memory) = 0;
 
-			virtual void UpdateVertexBuffer(_In_ ID3D11DeviceContext2* context, const T& data)
+			virtual void UpdateVertexBuffer(_In_ ID3D11DeviceContext2* context)
 			{
-				_vertexbuffer->Update(context, data);
+				_vertexbuffer->Update(context, *_vertices);
 			}
 
 			virtual void BindVertexBuffer(_In_ ID3D11DeviceContext2* context, 

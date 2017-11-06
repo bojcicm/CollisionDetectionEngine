@@ -1,14 +1,6 @@
 #include "pch.h"
 #include "Renderer3D.h"
 
-#include "..\..\..\Engine\Models\Basic Shapes\Pyramids.h"
-#include "..\..\..\Engine\Models\Basic Shapes\Cubes.h"
-#include "..\..\..\Engine\Models\Basic Shapes\Triangles.h"
-#include "..\..\..\Engine\Models\Explicit Surface.h"
-#include "..\..\..\Engine\Models\MD5Model\Md5Model.h"
-#include "..\..\Engine\Models\Basic Shapes\Cubes.h"
-#include "..\..\Engine\FullScreenQuad.h"
-
 using namespace std;
 using namespace vxe;
 using namespace concurrency;
@@ -60,11 +52,14 @@ void Renderer3D::CreateWindowSizeDependentResources()
 	_projection = make_shared<ProjectionTransform>(device, Handedness::LeftHanded);
 	_projection->SetProjection(orientationMatrix, fov, r, n, f);
 	_projection->Update(context);
-
 }
 
 void Renderer3D::Update(DX::StepTimer const& timer)
 {
+	if (!m_loadingComplete) {
+		return;
+	}
+
 	auto context = m_deviceResources->GetD3DDeviceContext();
 	_model->Update(timer);
 }
@@ -74,8 +69,6 @@ void Renderer3D::Render()
 	if (!m_loadingComplete) {
 		return;
 	}
-
-	DebugPrint(std::string("Renderer3D::Render() called\n"));
 	auto context = m_deviceResources->GetD3DDeviceContext();
 
 	SetCamera();
