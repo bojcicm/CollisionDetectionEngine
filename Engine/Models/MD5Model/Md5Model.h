@@ -19,7 +19,7 @@ namespace vxe {
 	public:
 		MD5Model() {};
 		
-		task<void> CreateAsync(_In_ ID3D11Device2* device, wstring filename, wstring animationFileName = L"");
+		vector<task<void>> CreateAsync(_In_ ID3D11Device2* device, wstring filename, wstring animationFileName = L"");
 
 		void Update(DX::StepTimer const&);
 		void Render(_In_ ID3D11DeviceContext2* context);
@@ -41,7 +41,7 @@ namespace vxe {
 		void PrepareNormals(shared_ptr<Md5Mesh> mesh);
 
 		task<void> LoadMd5Model(ID3D11Device2 * device, wstring filename);
-		task<void> LoadMd5Animation(ID3D11Device2 * device, wstring filename);
+		task<void> LoadMd5Animation(wstring filename);
 
 		int m_numberOfMeshes;
 		int m_numberOfJoints;

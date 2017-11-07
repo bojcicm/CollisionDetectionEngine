@@ -10,7 +10,8 @@ namespace vxe {
 		Md5Animation() {};
 
 		// Load an animation from the animation file
-		void LoadAnimation(const std::vector<byte>& data, ID3D11Device2 * device);
+		void LoadAnimation(const std::vector<byte>& data);
+		concurrency::task<void> InitAnimation(ID3D11Device2 * device);
 		// Update this animation's joint set.
 		void Update(float deltaTime);
 		// Draw the animated skeleton

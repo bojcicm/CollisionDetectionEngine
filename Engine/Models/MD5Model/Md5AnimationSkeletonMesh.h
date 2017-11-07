@@ -23,13 +23,12 @@ namespace vxe {
 			return CreateAsync(device);
 		}
 
-		void UpdateSkeletonMesh(_In_ ID3D11DeviceContext2* context, const SkeletonJointList* jointList)
+		void UpdateSkeletonMesh(const SkeletonJointList* jointList)
 		{
 			_vertices2.clear();
 			_indices2.clear();
 
 			CreateSkeletonFromJointList(jointList);
-			UpdateVertexBuffer(context);
 		}
 
 		// Inherited via MeshBase
@@ -54,11 +53,11 @@ namespace vxe {
 				auto vertex = VertexPositionColor(DirectX::XMLoadFloat3(&joint.position), DirectX::Colors::Yellow);
 				_vertices2.push_back(vertex);
 
-				/*if (joint.parentId != -1)
+				if (joint.parentId != -1)
 				{
 					_indices2.push_back(joint.parentId + 1);
 					_indices2.push_back(i);
-				}*/
+				}
 			}
 		}
 	};

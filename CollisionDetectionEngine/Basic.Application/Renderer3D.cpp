@@ -18,7 +18,8 @@ void Renderer3D::CreateDeviceDependentResources()
 	tasks.push_back(_pixelshader->CreateAsync(device, L"PixelShader.cso"));
 	
 	_model = make_shared<MD5Model>();
-	tasks.push_back(_model->CreateAsync(device, L"boy.md5mesh", L"boy.md5anim"));
+	auto modelTasks = _model->CreateAsync(device, L"boy.md5mesh", L"boy.md5anim");
+	tasks.insert(tasks.begin(), modelTasks.begin(), modelTasks.end());
 
 	_world = make_shared<WorldTransforms>(device);
 

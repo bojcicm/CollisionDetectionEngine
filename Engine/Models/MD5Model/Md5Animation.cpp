@@ -9,7 +9,7 @@
 
 namespace vxe {
 	
-	void Md5Animation::LoadAnimation(const std::vector<byte>& data, ID3D11Device2 * device)
+	void Md5Animation::LoadAnimation(const std::vector<byte>& data)
 	{
 		std::wstringstream fileIn(std::wstring(data.begin(), data.end()));
 		std::wstring checkString;					// Stores the next string from our file
@@ -159,9 +159,12 @@ namespace vxe {
 		frameDuration = 100.0f / (float)frameRate;
 		animationDuration = frameDuration * (float)numFrames;
 		animationTime = 1.0f;
+	}
 
-		//_animationMesh = std::make_shared<Md5AnimationSkeletonMesh>();
-		//_animationMesh->CreateAsync(device, &frameSkeleton.joints).wait();
+	concurrency::task<void> Md5Animation::InitAnimation(ID3D11Device2 * device)
+	{
+		_animationMesh = std::make_shared<Md5AnimationSkeletonMesh>();
+		return _animationMesh->CreateAsync(device, &frameSkeleton.joints);
 	}
 
 	void Md5Animation::Update(float deltaTime)
@@ -218,35 +221,35 @@ namespace vxe {
 			
 			SkeletonJoint animatedJoint;
 			animatedJoint.orientation = baseFrameJoints[i].orientation;
-			animatedJoint.position = baseFrameJoints[i].position;
+			//animatedJoint.position = baseFrameJoints[i].position;
 			animatedJoint.parentId = jointInfo.parentID;
 			
-			//if (jointInfo.flags & 1) // Pos.x
-			//{
-			//	animatedJoint.position.x = frame.frameData[jointInfo.startIndex + j++];
-			//}
-			//if (jointInfo.flags & 2) // Pos.z RH vs LH here should be Pos.y
-			//{
-			//	animatedJoint.position.y = frame.frameData[jointInfo.startIndex + j++];
-			//}
-			//if (jointInfo.flags & 4) // Pos.y RH vs LH here should be Pos.z
-			//{
-			//	animatedJoint.position.z = frame.frameData[jointInfo.startIndex + j++];
-			//}
-			//if (jointInfo.flags & 8) // Orient.x
-			//{
-			//	animatedJoint.orientation.x = frame.frameData[jointInfo.startIndex + j++];
-			//}
-			//if (jointInfo.flags & 16) // Orient.y
-			//{
-			//	animatedJoint.orientation.y = frame.frameData[jointInfo.startIndex + j++];
-			//}
-			//if (jointInfo.flags & 32) // Orient.z
-			//{
-			//	animatedJoint.orientation.z = frame.frameData[jointInfo.startIndex + j++];
-			//}
+			if (jointInfo.flags & 1) // Pos.x
+			{
+				animatedJoint.position.x = frame.frameData[jointInfo.startIndex + j++];
+			}
+			if (jointInfo.flags & 2) // Pos.z RH vs LH here should be Pos.y
+			{
+				animatedJoint.position.y = frame.frameData[jointInfo.startIndex + j++];
+			}
+			if (jointInfo.flags & 4) // Pos.y RH vs LH here should be Pos.z
+			{
+				animatedJoint.position.z = frame.frameData[jointInfo.startIndex + j++];
+			}
+			if (jointInfo.flags & 8) // Orient.x
+			{
+				animatedJoint.orientation.x = frame.frameData[jointInfo.startIndex + j++];
+			}
+			if (jointInfo.flags & 16) // Orient.y
+			{
+				animatedJoint.orientation.y = frame.frameData[jointInfo.startIndex + j++];
+			}
+			if (jointInfo.flags & 32) // Orient.z
+			{
+				animatedJoint.orientation.z = frame.frameData[jointInfo.startIndex + j++];
+			}
 
-			//ComputeQuaternionW(animatedJoint.orientation);
+			ComputeQuaternionW(animatedJoint.orientation);
 
 			//if (animatedJoint.parentId >= 0) // Has a parent joint
 			//{
@@ -295,8 +298,9 @@ namespace vxe {
 	void Md5Animation::Render(_In_ ID3D11DeviceContext2* context)
 	{
 		auto joints = &(GetSkeleton()->joints);
-		_animationMesh->UpdateSkeletonMesh(context, joints);
-		
+		_animationMesh->UpdateSkeletonMesh(joints);
+
+		_animationMesh->UpdateVertexBuffer(context);
 		_animationMesh->BindVertexBuffer(context);
 		_animationMesh->BindIndexBuffer(context);
 		_animationMesh->DrawIndexed(context);
