@@ -8,17 +8,28 @@ namespace vxe {
 
 	void MD5Model::Update(DX::StepTimer const& timer)
 	{
-		auto deltaTime = timer.GetTotalSeconds();
+		auto deltaTime = timer.GetElapsedSeconds();
+
+		_localWorld->Translate(0.0f, 0.0f, -15.0f * timer.GetTotalSeconds());
 
 		if (m_hasAnimation)
 		{
-			//_animation->Update(deltaTime);
+			_animation->Update(deltaTime);
 
 			for (auto i = 0; i < _meshes.size(); i++)
 			{
-				PrepareMesh(_meshes[i]);
+				PrepareMesh(_meshes[i], _animation);
 			}
 		}
+	}
+
+	void MD5Model::UpdateBuffers(_In_ ID3D11DeviceContext2* context)
+	{
+		for (auto& m : _meshes)
+		{
+			m->UpdateVertexBuffer(context);
+		}
+		_animation->UpdateBuffers(context);
 	}
 
 	void MD5Model::Render(_In_ ID3D11DeviceContext2* context)
@@ -35,7 +46,6 @@ namespace vxe {
 
 	void MD5Model::RenderMesh(_In_ ID3D11DeviceContext2* context, const std::shared_ptr<Md5Mesh>& mesh)
 	{
-		mesh->UpdateVertexBuffer(context);
 		mesh->BindVertexBuffer(context);
 		mesh->BindIndexBuffer(context);
 		mesh->DrawIndexed(context);
@@ -69,7 +79,7 @@ namespace vxe {
 			DX::ReadDataAsync(filename).then([this, device](std::vector<byte> data)
 			{
 				_localWorld = std::make_shared<WorldTransforms>(device);
-
+				_localWorld->RotateY(2.0f);
 				std::vector<concurrency::task<void>> tasks;
 				std::wstringstream fileIn(std::wstring(data.begin(), data.end()));
 				

@@ -46,17 +46,21 @@ namespace vxe {
 	private:
 		void CreateSkeletonFromJointList(const SkeletonJointList* jointsList)
 		{
-			for (auto i = 0; i< jointsList->size(); i++)
+			vector<tuple<int, int>> jointIdParentList;
+
+			for (auto i = 0; i < jointsList->size(); i++)
 			{
 				auto& joint = (*jointsList)[i];
-
+				/*
+				auto pair = make_tuple(i, joint.parentId);
+				jointIdParentList.push_back(pair);*/
 				auto vertex = VertexPositionColor(DirectX::XMLoadFloat3(&joint.position), DirectX::Colors::Yellow);
 				_vertices2.push_back(vertex);
 
 				if (joint.parentId != -1)
 				{
-					_indices2.push_back(joint.parentId + 1);
 					_indices2.push_back(i);
+					_indices2.push_back(joint.parentId);
 				}
 			}
 		}

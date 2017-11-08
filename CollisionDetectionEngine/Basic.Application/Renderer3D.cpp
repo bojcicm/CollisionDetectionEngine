@@ -23,7 +23,7 @@ void Renderer3D::CreateDeviceDependentResources()
 
 	_world = make_shared<WorldTransforms>(device);
 
-	when_all(tasks.begin(), tasks.end()).then([this]()
+	when_all(tasks.end(), tasks.end()).then([this]()
 	{
 		m_loadingComplete = true;
 		DebugPrint(string("\t -- A lambda: Loading is complete! \n"));
@@ -37,7 +37,7 @@ void Renderer3D::CreateWindowSizeDependentResources()
 	Size outputSize = m_deviceResources->GetOutputSize();
 
 	_view = make_shared<ViewTransform>(device);
-	static const XMVECTORF32 eye = { 0.0f, 50.0f, 100.0f, 0.0f };
+	static const XMVECTORF32 eye = { 0.0f, 70.0f, 100.0f, 0.0f };
 	static const XMVECTORF32 at = { 0.0f, 0.0f, 0.0f, 0.0f };
 	static const XMVECTORF32 up = { 0.0f, 1.0f, 0.0f, 0.0f };
 	_view->SetView(eye, at, up);
@@ -63,6 +63,7 @@ void Renderer3D::Update(DX::StepTimer const& timer)
 
 	auto context = m_deviceResources->GetD3DDeviceContext();
 	_model->Update(timer);
+	_model->UpdateBuffers(context);
 }
 
 void Renderer3D::Render()

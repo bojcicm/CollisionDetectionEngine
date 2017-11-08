@@ -14,6 +14,7 @@ namespace vxe {
 		concurrency::task<void> InitAnimation(ID3D11Device2 * device);
 		// Update this animation's joint set.
 		void Update(float deltaTime);
+		void UpdateBuffers(_In_ ID3D11DeviceContext2* context);
 		// Draw the animated skeleton
 		void Render(_In_ ID3D11DeviceContext2* context);
 		

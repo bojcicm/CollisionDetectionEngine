@@ -22,6 +22,7 @@ namespace vxe {
 		vector<task<void>> CreateAsync(_In_ ID3D11Device2* device, wstring filename, wstring animationFileName = L"");
 
 		void Update(DX::StepTimer const&);
+		void UpdateBuffers(_In_ ID3D11DeviceContext2* context);
 		void Render(_In_ ID3D11DeviceContext2* context);
 		void RenderMesh(_In_ ID3D11DeviceContext2* context, const shared_ptr<Md5Mesh>& mesh);
 		
