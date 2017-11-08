@@ -43,24 +43,10 @@ public:
 	{
 		_world->RotateY(radians);
 	}
-	template <typename T, typename U>
-	void Draw(std::shared_ptr<MeshBase<T, U>>& mesh,
-		std::shared_ptr<WorldTransforms>& world,
-		bool indexed = true)
-	{
-		auto context = m_deviceResources->GetD3DDeviceContext();
-		world->Update(context);
-		world->GetConstantBuffer()->Bind(context);
-		mesh->BindVertexBuffer(context);
-		mesh->BindIndexBuffer(context);
-		if (indexed) mesh->DrawIndexed(context);
-		else mesh->Draw(context);
-	}
 
 private:
 	void SetCamera()
 	{
-		DebugPrint(std::string("Renderer3D::SetCamera() called\n"));
 		auto context = m_deviceResources->GetD3DDeviceContext();
 		_view->GetConstantBuffer()->Bind(context, ProgrammableStage::VertexShaderStage, 1);
 		_projection->GetConstantBuffer()->Bind(context, ProgrammableStage::VertexShaderStage, 2);

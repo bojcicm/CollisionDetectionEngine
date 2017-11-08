@@ -5,11 +5,17 @@ using namespace std;
 
 namespace vxe 
 {
-	struct Joint {
-		wstring name;
-		int parentId;
+	struct Point {
 		XMFLOAT3 position;
 		XMFLOAT4 orientation;
+	};
+
+	struct Joint : Point {
+		Joint() : parentId(-1)
+		{}
+
+		int parentId;
+		wstring name;
 	};
 
 	struct Weight {
@@ -25,6 +31,7 @@ namespace vxe
 		int numberOfWeights;
 	};
 
+	typedef vector<Point> PointList;
 	typedef vector<Joint> JointList;
 	typedef vector<Weight> WeightList;
 	typedef vector<VertexWeightInfo> VertexWeightInfoList;

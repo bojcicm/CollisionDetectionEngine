@@ -8,258 +8,280 @@ namespace vxe {
 
 	void MD5Model::Update(DX::StepTimer const& timer)
 	{
-		DebugPrint(std::string("Model : Updated \n"));
-		auto deltaTime = timer.GetTotalSeconds();
+		auto deltaTime = timer.GetElapsedSeconds();
 
-		_localWorld->RotateY(deltaTime);
+		_localWorld->Translate(0.0f, 0.0f, -15.0f * timer.GetTotalSeconds());
+
+		if (m_hasAnimation)
+		{
+			_animation->Update(deltaTime);
+
+			for (auto i = 0; i < _meshes.size(); i++)
+			{
+				PrepareMesh(_meshes[i], _animation);
+			}
+		}
 	}
 
-	void MD5Model::Reset()
+	void MD5Model::UpdateBuffers(_In_ ID3D11DeviceContext2* context)
 	{
-		for (auto m : _meshes)
+		for (auto& m : _meshes)
 		{
-			m->Reset();
+			m->UpdateVertexBuffer(context);
 		}
+		_animation->UpdateBuffers(context);
 	}
 
 	void MD5Model::Render(_In_ ID3D11DeviceContext2* context)
 	{
+		_localWorld->Update(context);
+		_localWorld->GetConstantBuffer()->Bind(context);
 		for (auto& m : _meshes)
 		{
-			_localWorld->Update(context);
-			_localWorld->GetConstantBuffer()->Bind(context);
-			m->BindVertexBuffer(context);
-			m->BindIndexBuffer(context);
-			m->DrawIndexed(context);
+			RenderMesh(context, m);
 		}
+		if(m_hasAnimation)
+			_animation->Render(context);
 	}
 
-	concurrency::task<void> MD5Model::CreateAsync(ID3D11Device2 * device, std::wstring filename, std::wstring animationFileName)
+	void MD5Model::RenderMesh(_In_ ID3D11DeviceContext2* context, const std::shared_ptr<Md5Mesh>& mesh)
+	{
+		mesh->BindVertexBuffer(context);
+		mesh->BindIndexBuffer(context);
+		mesh->DrawIndexed(context);
+	}
+
+	vector<concurrency::task<void>> MD5Model::CreateAsync(ID3D11Device2 * device, std::wstring filename, std::wstring animationFileName)
 	{
 		DebugPrint(std::string("Model : Loading... \n"));
-		return concurrency::create_task(LoadMd5Model(device, filename)).then([this, animationFileName]() 
+		auto tasks = vector<task<void>>();
+		auto modelTask = concurrency::create_task(LoadMd5Model(device, filename));
+		tasks.push_back(modelTask);
+
+		if (!animationFileName.empty())
 		{
-			if(!animationFileName.empty())
-				LoadMd5Animation(animationFileName);
-		});
+			auto animationTask = concurrency::create_task(LoadMd5Animation(animationFileName)).then([this, device]()
+			{ 
+				_animation->InitAnimation(device).then([this]() {
+					m_hasAnimation = true;
+				});
+			});
+			tasks.push_back(animationTask);
+		}
+
+		return tasks;
 	}
 
 	concurrency::task<void> MD5Model::LoadMd5Model(ID3D11Device2 * device, std::wstring filename)
 	{
-		return concurrency::create_task(DX::ReadDataAsync(filename)).then([this, device](std::vector<byte> data)
+		return concurrency::create_task([this, device, filename]()
 		{
-			_localWorld = std::make_shared<WorldTransforms>(device);
-
-			std::vector<concurrency::task<void>> tasks;
-			std::wstringstream fileIn(std::wstring(data.begin(), data.end()));
-
-
-			std::wstring checkString;					// Stores the next string from our file
-
-			auto readString = [&fileIn, &checkString] { fileIn >> checkString; };
-			auto ignoreRestOfLine = [&fileIn, &checkString] { std::getline(fileIn, checkString); };
-			auto getStringNameWithPossibleSpacesBetweenQuotes = [&fileIn] {
-				std::wstring jointName;
-				fileIn >> jointName;
-
-				// Sometimes the names might contain spaces. If that is the case, we need to continue
-				// to read the name until we get to the closing " (quotation marks)
-				if (jointName[jointName.size() - 1] != '"')
-				{
-					wchar_t checkChar;
-					bool jointNameFound = false;
-					while (!jointNameFound)
-					{
-						checkChar = fileIn.get();
-
-						if (checkChar == '"')
-							jointNameFound = true;
-
-						jointName += checkChar;
-					}
-				}
-				return jointName;
-			};
-
-			DebugPrint(std::string("Model : Parsing.. \n"));
-
-			while (fileIn)
+			DX::ReadDataAsync(filename).then([this, device](std::vector<byte> data)
 			{
-				readString();
+				_localWorld = std::make_shared<WorldTransforms>(device);
+				_localWorld->RotateY(2.0f);
+				std::vector<concurrency::task<void>> tasks;
+				std::wstringstream fileIn(std::wstring(data.begin(), data.end()));
+				
+				std::wstring checkString;					// Stores the next string from our file
 
-				if (checkString == L"MD5Version")
+				auto readString = [&fileIn, &checkString] { fileIn >> checkString; };
+				auto ignoreRestOfLine = [&fileIn, &checkString] { std::getline(fileIn, checkString); };
+				auto getStringNameWithPossibleSpacesBetweenQuotes = [&fileIn] {
+					std::wstring jointName;
+					fileIn >> jointName;
+
+					// Sometimes the names might contain spaces. If that is the case, we need to continue
+					// to read the name until we get to the closing " (quotation marks)
+					if (jointName[jointName.size() - 1] != '"')
+					{
+						wchar_t checkChar;
+						bool jointNameFound = false;
+						while (!jointNameFound)
+						{
+							checkChar = fileIn.get();
+
+							if (checkChar == '"')
+								jointNameFound = true;
+
+							jointName += checkChar;
+						}
+					}
+					return jointName;
+				};
+
+				while (fileIn)
 				{
 					readString();
-					assert(checkString == L"10");
-					DebugPrint(std::wstring(L"\t MD5Version: ") + checkString.c_str() + std::wstring(L" \n"));
-				}
 
-				else if (checkString == L"commandline")
-				{
-					ignoreRestOfLine();
-				}
-
-				else if (checkString == L"numJoints")
-				{
-					fileIn >> m_numberOfJoints;
-					DebugPrint(std::string("\t Number of joints: ") + std::to_string(m_numberOfJoints) + std::string(" \n"));
-				}
-
-				else if (checkString == L"numMeshes")
-				{
-					fileIn >> m_numberOfMeshes;
-					DebugPrint(std::string("\t Number of subsets: ") + std::to_string(m_numberOfMeshes) + std::string(" \n"));
-				}
-
-				else if (checkString == L"joints")
-				{
-					DebugPrint(std::string("\t Model CreateAsync : Parsing joints data\n"));
-					Joint tempJoint;
-					readString();				// Skip the '{'
-
-					for (int i = 0; i < m_numberOfJoints; ++i)
+					if (checkString == L"MD5Version")
 					{
-						tempJoint.name = getStringNameWithPossibleSpacesBetweenQuotes();		// Store joints name
-						DebugPrint(std::wstring(L"\t Name of joint: ") + tempJoint.name + std::wstring(L" \n"));
+						readString();
+						assert(checkString == L"10");
+						DebugPrint(std::wstring(L"\t MD5Version: ") + checkString.c_str() + std::wstring(L" \n"));
+					}
 
-						fileIn >> tempJoint.parentId;   // Store Parent joint's ID
-						readString();					// Skip the "("
-						// Store position of this joint (swap y and z axis if model was made in RH Coord Sys)
-						fileIn >> tempJoint.position.x >> tempJoint.position.z >> tempJoint.position.y;
-						readString(); readString();    // Skip the ")" and "("
-						// Store orientation of this joint
-						fileIn >> tempJoint.orientation.x >> tempJoint.orientation.z >> tempJoint.orientation.y;
-						
-						//Remove the quotation marks from joints name
-						RemoveQuotes(tempJoint.name);
-						ComputeQuaternionW(tempJoint.orientation);
-
-						_joints.push_back(tempJoint);
-						
-						// Skip rest of this line
+					else if (checkString == L"commandline")
+					{
 						ignoreRestOfLine();
 					}
-					// Skip the '}'
-					readString();
-				}
 
-				else if (checkString == L"mesh")
-				{
-					DebugPrint(std::string("\t Model CreateAsync : Parsing mesh data\n"));
-
-					int numVerts, numTris, numWeights;
-
-					std::shared_ptr<Md5Mesh> modelMesh;
-					modelMesh = std::make_shared<Md5Mesh>();
-
-					readString();                    // Skip the "{"
-					readString();
-					while (checkString != L"}") // Until we get to "}"
+					else if (checkString == L"numJoints")
 					{
-						if (checkString == L"shader")
-						{
-							std::wstring fileNamePath = getStringNameWithPossibleSpacesBetweenQuotes();
-							// Remove the quotation marks from texture path
-							RemoveQuotes(fileNamePath);
-							
-							// TODO: Load texture
-
-							ignoreRestOfLine();
-						}
-						else if (checkString == L"numverts")
-						{
-							fileIn >> numVerts;
-							ignoreRestOfLine();
-
-							for (int i = 0; i < numVerts; ++i)
-							{
-								DirectX::VertexPositionNormalColorTexture tempVert;
-
-								readString();                      // Skip "vert"
-								readString();                      // Skip "#"
-								readString();                      // Skip "("
-
-								// Store tex coords
-								fileIn >> tempVert.textureCoordinate.x >> tempVert.textureCoordinate.y;
-								readString();                      // Skip ")"
-
-								VertexWeightInfo vertexToWeightInfo;
-								
-								fileIn  >> vertexToWeightInfo.startingWeightId // Index of first weight this vert will be weighted to
-										>> vertexToWeightInfo.numberOfWeights; // Number of weights for this vertex
-
-								ignoreRestOfLine();
-
-								modelMesh->PushBackVertex(tempVert);
-								modelMesh->vertexWeightsInfo.push_back(vertexToWeightInfo);
-							}
-						}
-						else if (checkString == L"numtris")
-						{
-							fileIn >> numTris;
-							ignoreRestOfLine();
-							modelMesh->numberOfTriangles = numTris;
-							for (int i = 0; i < numTris; i++)               // Loop through each triangle
-							{
-								unsigned short tempIndex;
-								readString();                      // Skip "tri"
-								readString();                      // Skip tri counter
-
-								for (int k = 0; k < 3; k++)                 // Store the 3 indices
-								{
-									fileIn >> tempIndex;
-									modelMesh->PushBackIndices(tempIndex);
-								}
-
-								ignoreRestOfLine();
-							}
-						}
-						else if (checkString == L"numweights")
-						{
-							fileIn >> numWeights;
-
-							ignoreRestOfLine();
-
-							for (int i = 0; i < numWeights; i++)
-							{
-								Weight tempWeight;
-								readString(); readString();     // Skip "weight #"
-
-								fileIn  >> tempWeight.jointId               // Store weight's joint ID
-										>> tempWeight.bias;					// Store weight's influence over a vertex
-
-								readString();                   // Skip "("
-
-								// Store weight's position in joint's local space
-								fileIn >> tempWeight.position.x >> tempWeight.position.z >> tempWeight.position.y;
-
-								ignoreRestOfLine();
-
-								// Push back tempWeight into subsets Weight array
-								modelMesh->weights.push_back(tempWeight);
-							}
-						}
-						else
-						{
-							ignoreRestOfLine();                // Skip anything else
-						}
-						readString();                                // Skip "}"
+						fileIn >> m_numberOfJoints;
+						DebugPrint(std::string("\t Number of joints: ") + std::to_string(m_numberOfJoints) + std::string(" \n"));
 					}
 
-					DebugPrint(std::string("\t Model CreateAsync : Preparing Mesh \n"));
-					PrepareMesh(modelMesh);
-					DebugPrint(std::string("\t Model CreateAsync : Preparing Normals \n"));
-					PrepareNormals(modelMesh);
+					else if (checkString == L"numMeshes")
+					{
+						fileIn >> m_numberOfMeshes;
+						DebugPrint(std::string("\t Number of subsets: ") + std::to_string(m_numberOfMeshes) + std::string(" \n"));
+					}
 
-					tasks.push_back(modelMesh->CreateAsync(device));
-					_meshes.push_back(modelMesh);
+					else if (checkString == L"joints")
+					{
+						Joint tempJoint;
+						readString();				// Skip the '{'
+
+						for (int i = 0; i < m_numberOfJoints; ++i)
+						{
+							tempJoint.name = getStringNameWithPossibleSpacesBetweenQuotes();		// Store joints name
+
+							fileIn >> tempJoint.parentId;   // Store Parent joint's ID
+							readString();					// Skip the "("
+															// Store position of this joint (swap y and z axis if model was made in RH Coord Sys)
+							fileIn >> tempJoint.position.x >> tempJoint.position.z >> tempJoint.position.y;
+							readString(); readString();    // Skip the ")" and "("
+														   // Store orientation of this joint
+							fileIn >> tempJoint.orientation.x >> tempJoint.orientation.z >> tempJoint.orientation.y;
+
+							//Remove the quotation marks from joints name
+							RemoveQuotes(tempJoint.name);
+							ComputeQuaternionW(tempJoint.orientation);
+
+							_joints.push_back(tempJoint);
+
+							// Skip rest of this line
+							ignoreRestOfLine();
+						}
+						// Skip the '}'
+						readString();
+					}
+
+					else if (checkString == L"mesh")
+					{
+						int numVerts, numTris, numWeights;
+
+						std::shared_ptr<Md5Mesh> modelMesh;
+						modelMesh = std::make_shared<Md5Mesh>();
+
+						readString();                    // Skip the "{"
+						readString();
+						while (checkString != L"}") // Until we get to "}"
+						{
+							if (checkString == L"shader")
+							{
+								std::wstring fileNamePath = getStringNameWithPossibleSpacesBetweenQuotes();
+								// Remove the quotation marks from texture path
+								RemoveQuotes(fileNamePath);
+
+								// TODO: Load texture
+
+								ignoreRestOfLine();
+							}
+							else if (checkString == L"numverts")
+							{
+								fileIn >> numVerts;
+								ignoreRestOfLine();
+
+								for (int i = 0; i < numVerts; ++i)
+								{
+									DirectX::VertexPositionNormalColorTexture tempVert;
+
+									readString();                      // Skip "vert"
+									readString();                      // Skip "#"
+									readString();                      // Skip "("
+
+																	   // Store tex coords
+									fileIn >> tempVert.textureCoordinate.x >> tempVert.textureCoordinate.y;
+									readString();                      // Skip ")"
+
+									VertexWeightInfo vertexToWeightInfo;
+
+									fileIn >> vertexToWeightInfo.startingWeightId // Index of first weight this vert will be weighted to
+										>> vertexToWeightInfo.numberOfWeights; // Number of weights for this vertex
+
+									ignoreRestOfLine();
+
+									modelMesh->PushBackVertex(tempVert);
+									modelMesh->vertexWeightsInfo.push_back(vertexToWeightInfo);
+								}
+							}
+							else if (checkString == L"numtris")
+							{
+								fileIn >> numTris;
+								ignoreRestOfLine();
+								modelMesh->numberOfTriangles = numTris;
+								for (int i = 0; i < numTris; i++)               // Loop through each triangle
+								{
+									unsigned short tempIndex;
+									readString();                      // Skip "tri"
+									readString();                      // Skip tri counter
+
+									for (int k = 0; k < 3; k++)                 // Store the 3 indices
+									{
+										fileIn >> tempIndex;
+										modelMesh->PushBackIndices(tempIndex);
+									}
+
+									ignoreRestOfLine();
+								}
+							}
+							else if (checkString == L"numweights")
+							{
+								fileIn >> numWeights;
+
+								ignoreRestOfLine();
+
+								for (int i = 0; i < numWeights; i++)
+								{
+									Weight tempWeight;
+									readString(); readString();     // Skip "weight #"
+
+									fileIn >> tempWeight.jointId               // Store weight's joint ID
+										>> tempWeight.bias;					// Store weight's influence over a vertex
+
+									readString();                   // Skip "("
+
+																	// Store weight's position in joint's local space
+									fileIn >> tempWeight.position.x >> tempWeight.position.z >> tempWeight.position.y;
+
+									ignoreRestOfLine();
+
+									// Push back tempWeight into subsets Weight array
+									modelMesh->weights.push_back(tempWeight);
+								}
+							}
+							else
+							{
+								ignoreRestOfLine();                // Skip anything else
+							}
+							readString();                                // Skip "}"
+						}
+
+						PrepareMesh(modelMesh);
+						PrepareNormals(modelMesh);
+
+						tasks.push_back(modelMesh->CreateAsync(device));
+						_meshes.push_back(modelMesh);
+					}
+
 				}
 
-			}
-
-			when_all(tasks.begin(), tasks.end()).then([this]()
-			{
-				DebugPrint(std::string("\t Model : Loading MD5 Vertex Data is complete! \n"));
+				when_all(tasks.begin(), tasks.end()).then([this]()
+				{
+					DebugPrint(std::string("\t Model : Loading MD5 Vertex Data is complete! \n"));
+				});
 			});
 		});
 	}
@@ -268,24 +290,21 @@ namespace vxe {
 	{
 		DebugPrint(std::wstring(L"Model : Loading animation - " + filename + L" \n"));
 		_animation = std::make_shared<Md5Animation>();
-		return concurrency::create_task(DX::ReadDataAsync(filename)).then([this, filename](std::vector<byte> data)
+		return concurrency::create_task(DX::ReadDataAsync(filename).then([this](std::vector<byte> data)
 		{
-			_animation->Md5Animation::LoadAnimation(data);
+			_animation->LoadAnimation(data);
 			DebugPrint(std::string("\t Model : Loading Md5 Animation is complete! \n"));
-		});
+		}));
 	}
 
 	void MD5Model::PrepareMesh(shared_ptr<Md5Mesh> mesh)
 	{
 		auto vertices = mesh->GetVertices();
-		for (auto i = 0; i < mesh->GetVertexCount(); i++) 
+		for (auto i = 0; i < mesh->GetVertexCount(); i++)
 		{
 			auto& vertex = vertices[i];
 			auto tempPosition = DirectX::XMFLOAT3(0, 0, 0);
-			auto tempColor = DirectX::XMFLOAT4(0, 0, 0, 0);
 			vertex.position = tempPosition;
-			vertex.color = tempColor;
-			vertex.color = DirectX::XMFLOAT4(DirectX::Colors::Yellow);
 			auto vertexWeightInfo = mesh->vertexWeightsInfo[i];
 
 			for (auto j = 0; j < vertexWeightInfo.numberOfWeights; j++)
@@ -315,6 +334,52 @@ namespace vxe {
 		}
 	}
 
+	void MD5Model::PrepareMesh(shared_ptr<Md5Mesh> mesh, shared_ptr<Md5Animation> animation)
+	{
+		auto vertices = mesh->GetVertices();
+		auto skeleton = animation->GetSkeleton();
+
+		for (auto i = 0; i < mesh->GetVertexCount(); i++)
+		{
+			auto& vertex = vertices[i];
+			vertex.position = DirectX::XMFLOAT3(0, 0, 0);
+
+			auto vertexWeightInfo = mesh->vertexWeightsInfo[i];
+
+			for (auto j = 0; j < vertexWeightInfo.numberOfWeights; j++)
+			{
+				auto& weight = mesh->weights[vertexWeightInfo.startingWeightId + j];
+				auto& joint = skeleton->joints[weight.jointId];
+
+				//update vertex position 
+
+				auto weightPosition = DirectX::XMLoadFloat3(&weight.position);
+				auto jointOrientation = DirectX::XMLoadFloat4(&joint.orientation);
+
+				auto tempJointOrientationConjugate = DirectX::XMQuaternionInverse(jointOrientation);
+
+				XMFLOAT3 rotatedPoint;
+				XMStoreFloat3(&rotatedPoint, XMQuaternionMultiply(XMQuaternionMultiply(jointOrientation, weightPosition), tempJointOrientationConjugate));
+
+				vertex.position.x += (joint.position.x + rotatedPoint.x) * weight.bias;
+				vertex.position.y += (joint.position.y + rotatedPoint.y) * weight.bias;
+				vertex.position.z += (joint.position.z + rotatedPoint.z) * weight.bias;
+
+				//update normals
+
+				//auto weightNormal = DirectX::XMLoadFloat3(&weight.normal);
+				//// Rotate the normal
+				//XMStoreFloat3(&rotatedPoint, XMQuaternionMultiply(XMQuaternionMultiply(jointOrientation, weightNormal), tempJointOrientationConjugate));
+
+				//vertex.normal.x -= rotatedPoint.x * weight.bias;
+				//vertex.normal.y -= rotatedPoint.y * weight.bias;
+				//vertex.normal.z -= rotatedPoint.z * weight.bias;
+				//XMStoreFloat3(&vertex.normal, XMVector3Normalize(XMLoadFloat3(&vertex.normal)));
+
+			}
+		}
+	}
+
 	void MD5Model::PrepareNormals(shared_ptr<Md5Mesh> mesh)
 	{
 		auto vertices = mesh->GetVertices();
@@ -339,7 +404,7 @@ namespace vxe {
 			vecY = vertices[indices[i * 3 + 2]].position.y - vertices[indices[i * 3 + 1]].position.y;
 			vecZ = vertices[indices[i * 3 + 2]].position.z - vertices[indices[i * 3 + 1]].position.z;
 			edge2 = DirectX::XMVectorSet(vecX, vecY, vecZ, 0.0f);
-			
+
 			//Cross multiply the two edge vectors to get the un-normalized face normal
 			DirectX::XMStoreFloat3(&unnormalized, DirectX::XMVector3Cross(edge1, edge2));
 			tempNormal.push_back(unnormalized);
@@ -349,7 +414,7 @@ namespace vxe {
 		int facesUsing = 0;
 		float tX, tY, tZ;
 
-		for (int i = 0; i < mesh->GetVertexCount(); ++i) 
+		for (int i = 0; i < mesh->GetVertexCount(); ++i)
 		{
 			//Check which triangles use this vertex
 			for (int j = 0; j < mesh->numberOfTriangles; ++j)
@@ -361,7 +426,7 @@ namespace vxe {
 					tX = DirectX::XMVectorGetX(normalSum) + tempNormal[j].x;
 					tY = DirectX::XMVectorGetY(normalSum) + tempNormal[j].y;
 					tZ = DirectX::XMVectorGetZ(normalSum) + tempNormal[j].z;
-					
+
 					//If a face is using the vertex, add the unormalized face normal to the normalSum
 					normalSum = DirectX::XMVectorSet(tX, tY, tZ, 0.0f);
 

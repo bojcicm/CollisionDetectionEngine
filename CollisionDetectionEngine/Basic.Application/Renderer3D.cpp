@@ -1,14 +1,6 @@
 #include "pch.h"
 #include "Renderer3D.h"
 
-#include "..\..\..\Engine\Models\Basic Shapes\Pyramids.h"
-#include "..\..\..\Engine\Models\Basic Shapes\Cubes.h"
-#include "..\..\..\Engine\Models\Basic Shapes\Triangles.h"
-#include "..\..\..\Engine\Models\Explicit Surface.h"
-#include "..\..\..\Engine\Models\MD5Model\Md5Model.h"
-#include "..\..\Engine\Models\Basic Shapes\Cubes.h"
-#include "..\..\Engine\FullScreenQuad.h"
-
 using namespace std;
 using namespace vxe;
 using namespace concurrency;
@@ -26,11 +18,12 @@ void Renderer3D::CreateDeviceDependentResources()
 	tasks.push_back(_pixelshader->CreateAsync(device, L"PixelShader.cso"));
 	
 	_model = make_shared<MD5Model>();
-	tasks.push_back(_model->CreateAsync(device, L"boy.md5mesh", L"boy.md5anim"));
+	auto modelTasks = _model->CreateAsync(device, L"boy.md5mesh", L"boy.md5anim");
+	tasks.insert(tasks.begin(), modelTasks.begin(), modelTasks.end());
 
 	_world = make_shared<WorldTransforms>(device);
 
-	when_all(tasks.begin(), tasks.end()).then([this]()
+	when_all(tasks.end(), tasks.end()).then([this]()
 	{
 		m_loadingComplete = true;
 		DebugPrint(string("\t -- A lambda: Loading is complete! \n"));
@@ -44,7 +37,7 @@ void Renderer3D::CreateWindowSizeDependentResources()
 	Size outputSize = m_deviceResources->GetOutputSize();
 
 	_view = make_shared<ViewTransform>(device);
-	static const XMVECTORF32 eye = { 0.0f, 50.0f, 100.0f, 0.0f };
+	static const XMVECTORF32 eye = { 0.0f, 70.0f, 100.0f, 0.0f };
 	static const XMVECTORF32 at = { 0.0f, 0.0f, 0.0f, 0.0f };
 	static const XMVECTORF32 up = { 0.0f, 1.0f, 0.0f, 0.0f };
 	_view->SetView(eye, at, up);
@@ -60,13 +53,17 @@ void Renderer3D::CreateWindowSizeDependentResources()
 	_projection = make_shared<ProjectionTransform>(device, Handedness::LeftHanded);
 	_projection->SetProjection(orientationMatrix, fov, r, n, f);
 	_projection->Update(context);
-
 }
 
 void Renderer3D::Update(DX::StepTimer const& timer)
 {
+	if (!m_loadingComplete) {
+		return;
+	}
+
 	auto context = m_deviceResources->GetD3DDeviceContext();
 	_model->Update(timer);
+	_model->UpdateBuffers(context);
 }
 
 void Renderer3D::Render()
@@ -74,8 +71,6 @@ void Renderer3D::Render()
 	if (!m_loadingComplete) {
 		return;
 	}
-
-	DebugPrint(std::string("Renderer3D::Render() called\n"));
 	auto context = m_deviceResources->GetD3DDeviceContext();
 
 	SetCamera();

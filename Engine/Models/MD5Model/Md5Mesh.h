@@ -24,7 +24,6 @@ namespace vxe {
 
 		WeightList weights;
 		VertexWeightInfoList vertexWeightsInfo;
-		vector<DirectX::XMFLOAT3> positions;
 		
 		void PushBackVertex(VertexPositionNormalColorTexture vertex)
 		{
