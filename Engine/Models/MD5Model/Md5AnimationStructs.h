@@ -5,7 +5,7 @@
 
 namespace vxe {
 	
-	struct BoundingBox
+	struct BoundingBoxBorders
 	{
 		DirectX::XMFLOAT3 min;
 		DirectX::XMFLOAT3 max;
@@ -40,7 +40,7 @@ namespace vxe {
 		SkeletonJointList joints;
 	};
 
-	typedef std::vector<BoundingBox> BoundingBoxList;
+	typedef std::vector<BoundingBoxBorders> BoundingBoxList;
 	typedef std::vector<AnimationJointInfo> AnimationJointInfoList;
 	typedef std::vector<FrameData> FrameDataList;
 	typedef std::vector<FrameSkeleton> FrameSkeletonList;

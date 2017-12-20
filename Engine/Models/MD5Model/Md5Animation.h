@@ -3,6 +3,7 @@
 #include "pch.h"
 #include "Md5AnimationStructs.h"
 #include "Md5AnimationSkeletonMesh.h"
+#include "Md5BoundingBoxMesh.h"
 
 namespace vxe {
 	class Md5Animation {
@@ -21,6 +22,7 @@ namespace vxe {
 		void Reset()
 		{
 			_animationMesh->Reset();
+			_animationBoundingBox->Reset();
 		}
 
 		const FrameSkeleton* GetSkeleton() const
@@ -42,6 +44,7 @@ namespace vxe {
 	protected:
 		void BuildFrameSkeleton(const FrameData& frameData);
 		void InterpolateSkeletons(FrameSkeleton& finalSkeleton, const FrameSkeleton& skeleton0, const FrameSkeleton& skeleton1, float fInterpolate);
+		void InterpolateBoundingBox(const BoundingBoxBorders& box0, const BoundingBoxBorders& box1, float fInterpolate);
 
 		AnimationJointInfoList jointInfoList;
 		BoundingBoxList frameBounds;
@@ -51,6 +54,9 @@ namespace vxe {
 
 		FrameSkeleton frameSkeleton;
 		std::shared_ptr<Md5AnimationSkeletonMesh> _animationMesh;
+
+		BoundingBoxBorders frameBoundingBox;
+		std::shared_ptr<Md5BoundingBoxMesh> _animationBoundingBox;
 
 	private:
 			int numFrames;

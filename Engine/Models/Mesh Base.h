@@ -61,7 +61,7 @@ namespace vxe {
 
 						_indexcount = (unsigned) indices.size();
 						_indices2 = indices;
-						_indices = &_indices[0];
+						_indices = &_indices2[0];
 						_indexbuffer = std::make_shared<IndexBuffer<U>>(device, violent_cast<void *> (_indices), _indexcount);
 
 						if (typeid(U) == typeid (unsigned short)) {

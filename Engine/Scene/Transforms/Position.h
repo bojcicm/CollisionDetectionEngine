@@ -24,6 +24,7 @@ namespace vxe {
 			: DataTransfer{ device }
 		{
 			DebugPrint(std::string("\t Position::Ctor ...\n"));
+			_transfer = DirectX::XMFLOAT4(0.0f, 0.0f, 0.0f, 0.0f);
 		}
 
 		void SetPosition(DirectX::FXMVECTOR position)

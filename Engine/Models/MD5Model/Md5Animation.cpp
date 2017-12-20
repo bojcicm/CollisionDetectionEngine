@@ -92,7 +92,7 @@ namespace vxe {
 
 				for (auto i = 0; i < numFrames; i++)
 				{
-					BoundingBox bound;
+					BoundingBoxBorders bound;
 					readString(); // skip '('
 					
 					fileIn >> bound.min.x >> bound.min.z >> bound.min.y;
@@ -152,6 +152,7 @@ namespace vxe {
 		} // while fileIn.eof
 
 		frameSkeleton = skeletons[0];
+		frameBoundingBox = frameBounds[0];
 		frameDuration = 1.0f / (float)frameRate;
 		animationDuration = frameDuration * (float)numFrames;
 		animationTime = 0.0f;
@@ -159,8 +160,15 @@ namespace vxe {
 
 	concurrency::task<void> Md5Animation::InitAnimation(ID3D11Device2 * device)
 	{
+		auto tasks = vector<task<void>>();
+
 		_animationMesh = std::make_shared<Md5AnimationSkeletonMesh>();
-		return _animationMesh->CreateAsync(device, &frameSkeleton.joints);
+		_animationBoundingBox = std::make_shared<Md5BoundingBoxMesh>();
+
+		tasks.push_back(_animationMesh->CreateAsync(device, &frameSkeleton.joints));
+		tasks.push_back(_animationBoundingBox->CreateAsync(device, &frameBoundingBox));
+
+		return concurrency::when_all(tasks.begin(), tasks.end());
 	}
 
 	void Md5Animation::BuildFrameSkeleton(const FrameData& frame)
@@ -275,6 +283,10 @@ namespace vxe {
 		}
 
 		InterpolateSkeletons(frameSkeleton, skeletons[frame0], skeletons[frame1], interpolate);
+
+		auto box0 = frameBounds[frame0];
+		auto box1 = frameBounds[frame1];
+		InterpolateBoundingBox(box0, box1, interpolate);
 	}
 
 	void Md5Animation::InterpolateSkeletons(FrameSkeleton& finalSkeleton, const FrameSkeleton& frameSkeleton0, const FrameSkeleton& frameSkeleton1, float fInterpolate)
@@ -299,11 +311,33 @@ namespace vxe {
 		}
 	}
 
+	void Md5Animation::InterpolateBoundingBox(const BoundingBoxBorders& box0, const BoundingBoxBorders& box1, float fInterpolate)
+	{
+		const auto& min0 = box0.min;
+		const auto& min1 = box1.min;
+		const auto& max0 = box0.max;
+		const auto& max1 = box1.max;
+
+		frameBoundingBox = BoundingBoxBorders();
+
+		frameBoundingBox.min.x = min0.x + (fInterpolate * (min1.x - min0.x));
+		frameBoundingBox.min.y = min0.y + (fInterpolate * (min1.y - min0.y));
+		frameBoundingBox.min.z = min0.z + (fInterpolate * (min1.z - min0.z));
+
+		frameBoundingBox.max.x = max0.x + (fInterpolate * (max1.x - max0.x));
+		frameBoundingBox.max.y = max0.y + (fInterpolate * (max1.y - max0.y));
+		frameBoundingBox.max.z = max0.z + (fInterpolate * (max1.z - max0.z));
+	}
+
 	void Md5Animation::Render(_In_ ID3D11DeviceContext2* context)
 	{
 		_animationMesh->BindVertexBuffer(context);
 		_animationMesh->BindIndexBuffer(context);
 		_animationMesh->DrawIndexed(context);
+
+		_animationBoundingBox->BindVertexBuffer(context);
+		_animationBoundingBox->BindIndexBuffer(context);
+		_animationBoundingBox->DrawIndexed(context);
 	}
 
 	void Md5Animation::UpdateBuffers(_In_ ID3D11DeviceContext2* context)
@@ -311,6 +345,9 @@ namespace vxe {
 		auto joints = &(GetSkeleton()->joints);
 		_animationMesh->UpdateSkeletonMesh(joints);
 
+		_animationBoundingBox->UpdateBoundingBox(&frameBoundingBox);
+
 		_animationMesh->UpdateVertexBuffer(context);
+		_animationBoundingBox->UpdateVertexBuffer(context);
 	}
 }
