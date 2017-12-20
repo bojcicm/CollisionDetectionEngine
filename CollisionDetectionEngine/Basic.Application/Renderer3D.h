@@ -11,6 +11,7 @@
 #include "..\..\..\Engine\Models\Mesh Base.h"
 #include "..\..\Engine\Models\Basic Shapes\Cubes.h"
 #include "..\..\..\Engine\Models\MD5Model\Md5Model.h"
+#include "..\..\..\Engine\Models\MD5Model\CubeObject.h"
 
 #include "..\..\..\Engine\Scene\Transforms\World Transforms.h"
 #include "..\..\..\Engine\Scene\Transforms\View Transform.h"
@@ -25,6 +26,7 @@ public:
 	std::shared_ptr<PixelShader> _pixelshader;
 
 	std::shared_ptr<MD5Model> _model;
+	std::shared_ptr<CubeObject> _cube;
 
 	std::shared_ptr<WorldTransforms> _world;
 	std::shared_ptr<ViewTransform> _view;
@@ -39,6 +41,9 @@ public:
 	void Update(DX::StepTimer const & timer);
 	void ReleaseDeviceDependentResources();
 	void Render();
+
+	bool Renderer3D::BoundingBoxCollisionTest(shared_ptr<GameObject> object1, shared_ptr<GameObject> object2);
+
 	void Rotate(float radians)
 	{
 		_world->RotateY(radians);

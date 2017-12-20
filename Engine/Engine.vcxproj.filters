@@ -265,6 +265,10 @@
     <ClInclude Include="Models\MD5Model\Md5AnimationStructs.h" />
     <ClInclude Include="Models\MD5Model\Md5Animation.h" />
     <ClInclude Include="Models\MD5Model\Md5AnimationSkeletonMesh.h" />
+    <ClInclude Include="Models\MD5Model\Md5BoundingBoxMesh.h" />
+    <ClInclude Include="Models\MD5Model\CollisionObject.h" />
+    <ClInclude Include="Models\MD5Model\GameObject.h" />
+    <ClInclude Include="Models\MD5Model\CubeObject.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Lighting\HLSL\Directional Light.hlsli">

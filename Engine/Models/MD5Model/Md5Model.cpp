@@ -10,7 +10,7 @@ namespace vxe {
 	{
 		auto deltaTime = timer.GetElapsedSeconds();
 
-		_localWorld->Translate(0.0f, 0.0f, -15.0f * timer.GetTotalSeconds());
+		//_localWorld->RotateY(timer.GetTotalSeconds());
 
 		if (m_hasAnimation)
 		{
@@ -40,8 +40,8 @@ namespace vxe {
 		{
 			RenderMesh(context, m);
 		}
-		if(m_hasAnimation)
-			_animation->Render(context);
+		/*if(m_hasAnimation)
+			_animation->Render(context);*/
 	}
 
 	void MD5Model::RenderMesh(_In_ ID3D11DeviceContext2* context, const std::shared_ptr<Md5Mesh>& mesh)
@@ -79,7 +79,9 @@ namespace vxe {
 			DX::ReadDataAsync(filename).then([this, device](std::vector<byte> data)
 			{
 				_localWorld = std::make_shared<WorldTransforms>(device);
-				_localWorld->RotateY(2.0f);
+				_localWorld->Translate(50.0f, 0.0f, 0.0f);
+				_worldPosition = std::make_shared<Position>(device);
+
 				std::vector<concurrency::task<void>> tasks;
 				std::wstringstream fileIn(std::wstring(data.begin(), data.end()));
 				
@@ -365,6 +367,7 @@ namespace vxe {
 				vertex.position.y += (joint.position.y + rotatedPoint.y) * weight.bias;
 				vertex.position.z += (joint.position.z + rotatedPoint.z) * weight.bias;
 
+				UpdateBoundingBox(vertex.position);
 				//update normals
 
 				//auto weightNormal = DirectX::XMLoadFloat3(&weight.normal);

@@ -7,6 +7,7 @@
 #include "Md5Mesh.h"
 #include "Md5Structs.h"
 #include "Md5Animation.h"
+#include "GameObject.h"
 
 using namespace std;
 using namespace concurrency;
@@ -14,7 +15,7 @@ using namespace DirectX;
 
 namespace vxe {
 
-	class MD5Model {
+	class MD5Model : public GameObject {
 
 	public:
 		MD5Model() {};
@@ -50,7 +51,5 @@ namespace vxe {
 		JointList _joints;
 		shared_ptr<Md5Animation> _animation;
 		vector<shared_ptr<Md5Mesh>> _meshes;
-
-		shared_ptr<WorldTransforms> _localWorld;
 	};
 }

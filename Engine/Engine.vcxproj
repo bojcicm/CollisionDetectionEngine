@@ -223,8 +223,12 @@
     <ClInclude Include="Models\Basic Shapes\Triangles.h" />
     <ClInclude Include="Models\Explicit Surface.h" />
     <ClInclude Include="Models\Generated Shapes\Grid.h" />
+    <ClInclude Include="Models\MD5Model\CollisionObject.h" />
+    <ClInclude Include="Models\MD5Model\CubeObject.h" />
+    <ClInclude Include="Models\MD5Model\GameObject.h" />
     <ClInclude Include="Models\MD5Model\Md5Animation.h" />
     <ClInclude Include="Models\MD5Model\Md5AnimationSkeletonMesh.h" />
+    <ClInclude Include="Models\MD5Model\Md5BoundingBoxMesh.h" />
     <ClInclude Include="Models\MD5Model\Md5Mesh.h" />
     <ClInclude Include="Models\MD5Model\Md5Model.h" />
     <ClInclude Include="Models\MD5Model\Md5Structs.h" />
