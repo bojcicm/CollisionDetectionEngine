@@ -43,18 +43,18 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="pch.cpp" />
     <ClCompile Include="Program.cpp" />
     <ClCompile Include="Renderer3D.cpp">
       <Filter>Renderer</Filter>
     </ClCompile>
+    <ClCompile Include="pch.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="pch.h" />
     <ClInclude Include="Renderer3D.h">
       <Filter>Renderer</Filter>
     </ClInclude>
     <ClInclude Include="resource.h" />
+    <ClInclude Include="pch.h" />
   </ItemGroup>
   <ItemGroup>
     <AppxManifest Include="Package.appxmanifest" />

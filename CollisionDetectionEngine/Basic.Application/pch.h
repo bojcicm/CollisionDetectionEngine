@@ -9,3 +9,5 @@
 #include "..\..\..\Engine\Core\Common\StepTimer.h"
 #include "..\..\..\Engine\Core\Content\RendererBase3D.h"
 #include "..\..\..\Engine\Core\Content\SampleFpsTextRenderer.h"
+
+#include "Renderer3D.h"

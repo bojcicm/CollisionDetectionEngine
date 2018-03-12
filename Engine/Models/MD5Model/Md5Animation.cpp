@@ -335,9 +335,9 @@ namespace vxe {
 		_animationMesh->BindIndexBuffer(context);
 		_animationMesh->DrawIndexed(context);
 
-		_animationBoundingBox->BindVertexBuffer(context);
+		/*_animationBoundingBox->BindVertexBuffer(context);
 		_animationBoundingBox->BindIndexBuffer(context);
-		_animationBoundingBox->DrawIndexed(context);
+		_animationBoundingBox->DrawIndexed(context);*/
 	}
 
 	void Md5Animation::UpdateBuffers(_In_ ID3D11DeviceContext2* context)

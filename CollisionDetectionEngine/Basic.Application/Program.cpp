@@ -1,5 +1,4 @@
 #include "pch.h"
-#include "Renderer3D.h"
 
 using namespace Platform;
 using namespace Windows::ApplicationModel::Core;

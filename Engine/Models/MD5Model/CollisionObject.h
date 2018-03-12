@@ -5,7 +5,14 @@ using namespace DirectX;
 
 namespace vxe {
 	class CollisionObject {
+		
 	public:
+		CollisionObject()
+		{
+			vertexMin = XMFLOAT3(0.0f, 0.0f, 0.0f);
+			vertexMax = XMFLOAT3(0.0f, 0.0f, 0.0f);
+		}
+
 		void UpdateBoundingBox(XMFLOAT3 vertex)
 		{
 			if (vertex.x < vertexMin.x) 

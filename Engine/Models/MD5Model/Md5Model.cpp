@@ -29,7 +29,8 @@ namespace vxe {
 		{
 			m->UpdateVertexBuffer(context);
 		}
-		_animation->UpdateBuffers(context);
+		if(m_hasAnimation)
+			_animation->UpdateBuffers(context);
 	}
 
 	void MD5Model::Render(_In_ ID3D11DeviceContext2* context)
@@ -40,8 +41,8 @@ namespace vxe {
 		{
 			RenderMesh(context, m);
 		}
-		/*if(m_hasAnimation)
-			_animation->Render(context);*/
+		if(m_hasAnimation)
+			_animation->Render(context);
 	}
 
 	void MD5Model::RenderMesh(_In_ ID3D11DeviceContext2* context, const std::shared_ptr<Md5Mesh>& mesh)
@@ -79,7 +80,7 @@ namespace vxe {
 			DX::ReadDataAsync(filename).then([this, device](std::vector<byte> data)
 			{
 				_localWorld = std::make_shared<WorldTransforms>(device);
-				_localWorld->Translate(50.0f, 0.0f, 0.0f);
+				_localWorld->RotateY(3.14f);
 				_worldPosition = std::make_shared<Position>(device);
 
 				std::vector<concurrency::task<void>> tasks;

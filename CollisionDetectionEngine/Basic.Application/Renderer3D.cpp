@@ -1,5 +1,4 @@
 #include "pch.h"
-#include "Renderer3D.h"
 
 using namespace std;
 using namespace vxe;
@@ -41,7 +40,7 @@ void Renderer3D::CreateWindowSizeDependentResources()
 	Size outputSize = m_deviceResources->GetOutputSize();
 
 	_view = make_shared<ViewTransform>(device);
-	static const XMVECTORF32 eye = { 0.0f, 70.0f, 100.0f, 0.0f };
+	static const XMVECTORF32 eye = { 0.0f, 70.0f, 110.0f, 0.0f };
 	static const XMVECTORF32 at = { 0.0f, 0.0f, 0.0f, 0.0f };
 	static const XMVECTORF32 up = { 0.0f, 1.0f, 0.0f, 0.0f };
 	_view->SetView(eye, at, up);
@@ -69,18 +68,14 @@ void Renderer3D::Update(DX::StepTimer const& timer)
 	_model->Update(timer);
 	_model->UpdateBuffers(context);
 
-	auto xMov = timer.GetElapsedSeconds();
-	_cube->TranslateObject(0.5f, 0.0f, 0.0f);
+	//auto xMov = timer.GetElapsedSeconds();
+	//_cube->TranslateObject(0.5f, 0.0f, 0.0f);
 	
-	auto isCollision = BoundingBoxCollisionTest(_model, _cube);
+	/*auto isCollision = BoundingBoxCollisionTest(_model, _cube);
 	if (isCollision)
 	{
 		DebugPrint(std::string("Collision happening\n"));
-	}
-	else
-	{
-		DebugPrint(std::string("No Collision\n"));
-	}
+	}*/
 }
 
 void Renderer3D::Render()	
@@ -96,7 +91,7 @@ void Renderer3D::Render()
 	_pixelshader->Bind(context);
 
 	_model->Render(context);
-	_cube->Render(context);
+	//_cube->Render(context);
 
 	m_deviceResources->SetRasterizerState();
 }
@@ -121,6 +116,12 @@ bool Renderer3D::BoundingBoxCollisionTest(shared_ptr<GameObject> object1, shared
 	auto vert1Max = XMVector3TransformCoord(XMLoadFloat3(&object1->GetMax()), XMLoadFloat4x4(&object1->GetWorldTransform()->GetWorld()));
 	auto vert2Min = XMVector3TransformCoord(XMLoadFloat3(&object2->GetMin()), XMLoadFloat4x4(&object2->GetWorldTransform()->GetWorld()));
 	auto vert2Max = XMVector3TransformCoord(XMLoadFloat3(&object2->GetMax()), XMLoadFloat4x4(&object2->GetWorldTransform()->GetWorld()));
+
+	DebugPrint(string("Testing collision between model and cube:\n"));
+	DebugPrint(string("Model min:\t" + ToString(vert1Min) + "\n"));
+	DebugPrint(string("Model max:\t" + ToString(vert1Max) + "\n"));
+	DebugPrint(string("Cube min:\t" + ToString(vert2Min) + "\n"));
+	DebugPrint(string("Cube max:\t" + ToString(vert2Max) + "\n"));
 
 	if (XMVectorGetX(vert1Max) > XMVectorGetX(vert2Min))
 		if (XMVectorGetX(vert1Min) < XMVectorGetX(vert2Max))

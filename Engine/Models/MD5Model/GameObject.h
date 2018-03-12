@@ -9,6 +9,8 @@ namespace vxe {
 	
 	class GameObject : public CollisionObject {
 	public:
+		GameObject() {};
+
 		shared_ptr<WorldTransforms> GetWorldTransform() { return _localWorld; }
 		shared_ptr<Position> GetPosition() { return _worldPosition; }
 

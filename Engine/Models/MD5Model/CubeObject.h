@@ -19,7 +19,16 @@ namespace vxe {
 			_localWorld->Scale(10.0f, 10.0f, 10.0f);
 
 			cube = make_shared<Cube<VertexPositionColor, unsigned short>>();
-			return cube->CreateAsync(device);
+			return cube->CreateAsync(device).then([this, device]() { UpdateCollisionObject(); });
+		}
+
+		void UpdateCollisionObject()
+		{
+			auto vertex = cube->GetVertices();
+			for (auto i = 0; i < cube->GetVertexCount(); i++)
+			{
+				UpdateBoundingBox(vertex[i].position);
+			}
 		}
 
 		void Render(_In_ ID3D11DeviceContext2* context)

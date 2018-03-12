@@ -18,7 +18,10 @@ namespace vxe {
 	class MD5Model : public GameObject {
 
 	public:
-		MD5Model() {};
+		MD5Model() 
+		{
+			m_hasAnimation = false;
+		};
 		
 		vector<task<void>> CreateAsync(_In_ ID3D11Device2* device, wstring filename, wstring animationFileName = L"");
 
