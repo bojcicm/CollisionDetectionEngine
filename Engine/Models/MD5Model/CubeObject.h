@@ -15,8 +15,15 @@ namespace vxe {
 		task<void> CreateAsync(ID3D11Device2 * device)
 		{
 			_worldPosition = std::make_shared<Position>(device);
+			_scale = std::make_shared<Position>(device);
 			_localWorld = std::make_shared<WorldTransforms>(device);
-			_localWorld->Scale(10.0f, 10.0f, 10.0f);
+
+			ScaleDiff(10.0f, 10.0f, 10.0f);
+			PositionDiff(-30.0f, 0.0f, 0.0f);
+			UpdateLocalWorld();
+
+			UpdateBoundingBox(XMFLOAT3(1.0f, 1.0f, 1.0f));
+			UpdateBoundingBox(XMFLOAT3(-1.0f, -1.0f, -1.0f));
 
 			cube = make_shared<Cube<VertexPositionColor, unsigned short>>();
 			return cube->CreateAsync(device);

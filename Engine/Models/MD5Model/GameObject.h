@@ -12,11 +12,22 @@ namespace vxe {
 		shared_ptr<WorldTransforms> GetWorldTransform() { return _localWorld; }
 		shared_ptr<Position> GetPosition() { return _worldPosition; }
 
-		void TranslateObject(float x, float y, float z)
+		void PositionDiff(float x, float y, float z)
 		{
 			_worldPosition->ChangePosition(x, y, z);
-			auto newPosition = _worldPosition->GetValue();
-			_localWorld->Translate(newPosition.x, newPosition.y, newPosition.z);
+		}
+
+		void ScaleDiff(float x, float y, float z)
+		{
+			_scale->ChangePosition(x, y, z);
+		}
+
+		void UpdateLocalWorld()
+		{
+			auto scaleMatrix = DirectX::XMMatrixScalingFromVector(_scale->GetPosition());
+			auto positionMatrix = DirectX::XMMatrixTranslationFromVector(_worldPosition->GetPosition());
+			auto rotationMatrix = DirectX::XMMatrixRotationX(0.0f);
+			_localWorld->Transform(scaleMatrix, rotationMatrix, positionMatrix);
 		}
 
 	protected:

@@ -43,6 +43,10 @@ namespace vxe {
 	}
 
 #if defined (_DEBUG)
+	inline std::string BoolToString(bool b)
+	{
+		return b ? std::string("true") : std::string("false");
+	}
 
 	inline std::string ToString(DirectX::XMFLOAT3 *vector)
 	{
@@ -62,6 +66,20 @@ namespace vxe {
 		ss << std::setprecision(7);
 
 		ss << "[ " << vector->x << " " << vector->y << " " << vector->z << " " << vector->w << " ]";
+
+		return ss.str();
+	}
+
+	inline std::string ToString(DirectX::XMVECTOR *vector)
+	{
+		std::stringstream ss;
+
+		ss << std::setprecision(7);
+
+		ss << "[ " << DirectX::XMVectorGetX(*vector) << " " 
+		           << DirectX::XMVectorGetY(*vector) << " "
+		           << DirectX::XMVectorGetZ(*vector) << " " 
+		           << DirectX::XMVectorGetW(*vector) << " ]";
 
 		return ss.str();
 	}

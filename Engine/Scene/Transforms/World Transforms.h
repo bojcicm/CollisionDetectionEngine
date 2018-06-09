@@ -46,7 +46,7 @@ namespace vxe {
 
 		void Transform(DirectX::CXMMATRIX scale, DirectX::CXMMATRIX rotation, DirectX::CXMMATRIX translation)
 		{
-			DebugPrint(std::string("\t\t WorldTransforms::Transform() ...\n"));
+			//DebugPrint(std::string("\t\t WorldTransforms::Transform() ...\n"));
 
 			DirectX::XMMATRIX world = DirectX::XMMatrixMultiply(DirectX::XMMatrixMultiply(scale, rotation), translation);
 

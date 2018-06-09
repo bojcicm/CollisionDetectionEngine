@@ -26,18 +26,9 @@ namespace vxe {
 		std::vector<float> frameData;
 	};
 
-	struct SkeletonJoint : Point
-	{
-		SkeletonJoint() : Point(), parentId(-1)
-		{}
-
-		int parentId;
-	};
-	typedef std::vector<SkeletonJoint> SkeletonJointList;
-
 	struct FrameSkeleton
 	{
-		SkeletonJointList joints;
+		JointList joints;
 	};
 
 	typedef std::vector<BoundingBoxBorders> BoundingBoxList;

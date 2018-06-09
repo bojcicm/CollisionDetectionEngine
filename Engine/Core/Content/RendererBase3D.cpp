@@ -18,6 +18,7 @@ void RendererBase3D::Initialize(const shared_ptr<DX::DeviceResources>& deviceRes
 	DebugPrint(std::string("\t RendererBase3D::Initialize()... \n"));
 
 	m_deviceResources = deviceResources;
+	m_loadingComplete = false;
 
 	CreateDeviceDependentResources();
 	CreateWindowSizeDependentResources();

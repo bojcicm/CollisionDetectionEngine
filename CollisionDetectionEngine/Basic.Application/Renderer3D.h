@@ -33,6 +33,7 @@ public:
 	std::shared_ptr<ProjectionTransform> _projection;
 
 	Renderer3D() :RendererBase3D()
+		,isCollision(false)
 	{
 		DebugPrint(std::string("Renderer3D::Ctor called\n"));
 	}
@@ -56,4 +57,6 @@ private:
 		_view->GetConstantBuffer()->Bind(context, ProgrammableStage::VertexShaderStage, 1);
 		_projection->GetConstantBuffer()->Bind(context, ProgrammableStage::VertexShaderStage, 2);
 	}
+
+	bool isCollision;
 };

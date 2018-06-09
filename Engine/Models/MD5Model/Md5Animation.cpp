@@ -180,7 +180,7 @@ namespace vxe {
 			unsigned int j = 0;
 			const auto& jointInfo = jointInfoList[i];
 			
-			SkeletonJoint animatedJoint;
+			Joint animatedJoint;
 			animatedJoint.orientation = baseFrameJoints[i].orientation;
 			animatedJoint.position = baseFrameJoints[i].position;
 			animatedJoint.parentId = jointInfo.parentID;
@@ -249,7 +249,6 @@ namespace vxe {
 		animationTime += (deltaTime * 0.5);
 
 		if (animationTime > animationDuration) animationTime = fmod(animationTime,animationDuration);
-		//while (animationTime < 0.0f) animationTime += animationDuration;
 
 		auto frameNumber = animationTime * (float)frameRate;
 		auto frame0 = (int)floorf(frameNumber) % numFrames;
@@ -261,26 +260,6 @@ namespace vxe {
 
 		auto& skeleton0 = skeletons[frame0];
 		auto& skeleton1 = skeletons[frame1];
-
-		frameSkeleton.joints.clear();
-		for (auto i = 0; i < numJoints; i++)
-		{
-			auto finalJoint = SkeletonJoint();
-			const auto& joint0 = skeleton0.joints[i];
-			const auto& joint1 = skeleton1.joints[i];
-
-			auto joint0Orientation = DirectX::XMLoadFloat4(&joint0.orientation);
-			auto joint1Orientation = DirectX::XMLoadFloat4(&joint1.orientation);
-
-			finalJoint.parentId = joint0.parentId;
-			finalJoint.position.x = joint0.position.x + (interpolate * (joint1.position.x - joint0.position.x));
-			finalJoint.position.y = joint0.position.y + (interpolate * (joint1.position.y - joint0.position.y));
-			finalJoint.position.z = joint0.position.z + (interpolate * (joint1.position.z - joint0.position.z));
-
-			XMStoreFloat4(&finalJoint.orientation, DirectX::XMQuaternionSlerp(joint0Orientation, joint1Orientation, interpolate));
-
-			frameSkeleton.joints.push_back(finalJoint);
-		}
 
 		InterpolateSkeletons(frameSkeleton, skeletons[frame0], skeletons[frame1], interpolate);
 
@@ -294,7 +273,7 @@ namespace vxe {
 		for (auto i = 0; i < numJoints; i++)
 		{
 			auto& finalJoint = finalSkeleton.joints[i];
-			finalJoint = SkeletonJoint();
+			finalJoint = Joint();
 
 			const auto& joint0 = frameSkeleton0.joints[i];
 			const auto& joint1 = frameSkeleton1.joints[i];

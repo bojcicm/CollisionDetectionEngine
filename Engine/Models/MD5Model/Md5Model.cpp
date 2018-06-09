@@ -12,10 +12,11 @@ namespace vxe {
 
 		//_localWorld->RotateY(timer.GetTotalSeconds());
 
+		//if(false)
 		if (m_hasAnimation)
 		{
 			_animation->Update(deltaTime);
-
+			InitBoundingBox();
 			for (auto i = 0; i < _meshes.size(); i++)
 			{
 				PrepareMesh(_meshes[i], _animation);
@@ -40,8 +41,10 @@ namespace vxe {
 		{
 			RenderMesh(context, m);
 		}
-		/*if(m_hasAnimation)
-			_animation->Render(context);*/
+
+		//if(false)
+		if(m_hasAnimation)
+			_animation->Render(context);
 	}
 
 	void MD5Model::RenderMesh(_In_ ID3D11DeviceContext2* context, const std::shared_ptr<Md5Mesh>& mesh)
@@ -54,6 +57,15 @@ namespace vxe {
 	vector<concurrency::task<void>> MD5Model::CreateAsync(ID3D11Device2 * device, std::wstring filename, std::wstring animationFileName)
 	{
 		DebugPrint(std::string("Model : Loading... \n"));
+		
+		_localWorld = std::make_shared<WorldTransforms>(device);
+		_worldPosition = std::make_shared<Position>(device);
+		_scale = std::make_shared<Position>(device);
+		PositionDiff(15.0f, 0.0f, 0.0f);
+		ScaleDiff(0.5f, 0.5f, 0.5f);
+		UpdateLocalWorld();
+		InitBoundingBox();
+
 		auto tasks = vector<task<void>>();
 		auto modelTask = concurrency::create_task(LoadMd5Model(device, filename));
 		tasks.push_back(modelTask);
@@ -78,10 +90,6 @@ namespace vxe {
 		{
 			DX::ReadDataAsync(filename).then([this, device](std::vector<byte> data)
 			{
-				_localWorld = std::make_shared<WorldTransforms>(device);
-				_localWorld->Translate(50.0f, 0.0f, 0.0f);
-				_worldPosition = std::make_shared<Position>(device);
-
 				std::vector<concurrency::task<void>> tasks;
 				std::wstringstream fileIn(std::wstring(data.begin(), data.end()));
 				
@@ -324,14 +332,19 @@ namespace vxe {
 				vertex.position.x += (joint.position.x + rotatedPoint.x) * weight.bias;
 				vertex.position.y += (joint.position.y + rotatedPoint.y) * weight.bias;
 				vertex.position.z += (joint.position.z + rotatedPoint.z) * weight.bias;
+				UpdateBoundingBox(vertex.position);
 
-				// Basically what has happened above, is we have taken the weights position relative to the joints position
-				// we then rotate the weights position (so that the weight is actually being rotated around (0, 0, 0) in world space) using
-				// the quaternion describing the joints rotation. We have stored this rotated point in rotatedPoint, which we then add to
-				// the joints position (because we rotated the weight's position around (0,0,0) in world space, and now need to translate it
-				// so that it appears to have been rotated around the joints position). Finally we multiply the answer with the weights bias,
-				// or how much control the weight has over the final vertices position. All weight's bias effecting a single vertex's position
-				// must add up to 1.
+				// Basically what has happened above, is 
+				//		we have taken the weights position relative to the joints position
+				//		we then rotate the weights position
+				//				(so that the weight is actually being rotated around (0, 0, 0) in world space) 
+				//				using the quaternion describing the joints rotation. 
+				//		We have stored this rotated point in rotatedPoint, 
+				//		which we then add to the joints position 
+				//				(because we rotated the weight's position around (0,0,0) in world space, 
+				//				and now need to translate it so that it appears to have been rotated around the joints position). 
+				//		Finally we multiply the answer with the weights bias, or how much control the weight has over the final vertices position. 
+				//		All weight's bias effecting a single vertex's position must add up to 1.
 			}
 		}
 	}
@@ -340,7 +353,6 @@ namespace vxe {
 	{
 		auto vertices = mesh->GetVertices();
 		auto skeleton = animation->GetSkeleton();
-
 		for (auto i = 0; i < mesh->GetVertexCount(); i++)
 		{
 			auto& vertex = vertices[i];

@@ -16,14 +16,14 @@ namespace vxe {
 	public:
 		Md5AnimationSkeletonMesh() { }
 
-		concurrency::task<void> CreateAsync(ID3D11Device2 * device, SkeletonJointList* jointList)
+		concurrency::task<void> CreateAsync(ID3D11Device2 * device, JointList* jointList)
 		{
 			_topology = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
 			CreateSkeletonFromJointList(jointList);
 			return CreateAsync(device);
 		}
 
-		void UpdateSkeletonMesh(const SkeletonJointList* jointList)
+		void UpdateSkeletonMesh(const JointList* jointList)
 		{
 			_vertices2.clear();
 			_indices2.clear();
@@ -44,16 +44,11 @@ namespace vxe {
 		}
 
 	private:
-		void CreateSkeletonFromJointList(const SkeletonJointList* jointsList)
+		void CreateSkeletonFromJointList(const JointList* jointsList)
 		{
-			vector<tuple<int, int>> jointIdParentList;
-
 			for (auto i = 0; i < jointsList->size(); i++)
 			{
 				auto& joint = (*jointsList)[i];
-				/*
-				auto pair = make_tuple(i, joint.parentId);
-				jointIdParentList.push_back(pair);*/
 				auto vertex = VertexPositionColor(DirectX::XMLoadFloat3(&joint.position), DirectX::Colors::Yellow);
 				_vertices2.push_back(vertex);
 

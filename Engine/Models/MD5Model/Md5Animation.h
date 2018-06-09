@@ -35,12 +35,6 @@ namespace vxe {
 			return numJoints;
 		}
 
-		const AnimationJointInfo& GetJointInfo(unsigned int index) const
-		{
-			assert(index < jointInfoList.size());
-			return jointInfoList[index];
-		}
-
 	protected:
 		void BuildFrameSkeleton(const FrameData& frameData);
 		void InterpolateSkeletons(FrameSkeleton& finalSkeleton, const FrameSkeleton& skeleton0, const FrameSkeleton& skeleton1, float fInterpolate);

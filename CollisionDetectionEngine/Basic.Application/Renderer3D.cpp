@@ -29,8 +29,8 @@ void Renderer3D::CreateDeviceDependentResources()
 
 	when_all(tasks.end(), tasks.end()).then([this]()
 	{
-		m_loadingComplete = true;
 		DebugPrint(string("\t -- A lambda: Loading is complete! \n"));
+		m_loadingComplete = true;
 	});
 }
 
@@ -41,7 +41,7 @@ void Renderer3D::CreateWindowSizeDependentResources()
 	Size outputSize = m_deviceResources->GetOutputSize();
 
 	_view = make_shared<ViewTransform>(device);
-	static const XMVECTORF32 eye = { 0.0f, 70.0f, 100.0f, 0.0f };
+	static const XMVECTORF32 eye = { 0.0f, 50.0f, -100.0f, 0.0f };
 	static const XMVECTORF32 at = { 0.0f, 0.0f, 0.0f, 0.0f };
 	static const XMVECTORF32 up = { 0.0f, 1.0f, 0.0f, 0.0f };
 	_view->SetView(eye, at, up);
@@ -69,10 +69,14 @@ void Renderer3D::Update(DX::StepTimer const& timer)
 	_model->Update(timer);
 	_model->UpdateBuffers(context);
 
-	auto xMov = timer.GetElapsedSeconds();
-	_cube->TranslateObject(0.5f, 0.0f, 0.0f);
-	
-	auto isCollision = BoundingBoxCollisionTest(_model, _cube);
+	DebugPrint(std::string("Renderer3D::Update()->IsCollision: " + BoolToString(isCollision) + "\n"));
+	if (!isCollision)
+	{
+		_cube->PositionDiff(0.07f, 0.0f, 0.0f);
+		_cube->UpdateLocalWorld();
+	}
+
+	isCollision = BoundingBoxCollisionTest(_model, _cube);
 	if (isCollision)
 	{
 		DebugPrint(std::string("Collision happening\n"));
@@ -112,22 +116,24 @@ void Renderer3D::ReleaseDeviceDependentResources()
 
 	_model->Reset();
 	_cube->Reset();
-
 }
 
 bool Renderer3D::BoundingBoxCollisionTest(shared_ptr<GameObject> object1, shared_ptr<GameObject> object2)
 {
-	auto vert1Min = XMVector3TransformCoord(XMLoadFloat3(&object1->GetMin()), XMLoadFloat4x4(&object1->GetWorldTransform()->GetWorld()));
-	auto vert1Max = XMVector3TransformCoord(XMLoadFloat3(&object1->GetMax()), XMLoadFloat4x4(&object1->GetWorldTransform()->GetWorld()));
-	auto vert2Min = XMVector3TransformCoord(XMLoadFloat3(&object2->GetMin()), XMLoadFloat4x4(&object2->GetWorldTransform()->GetWorld()));
-	auto vert2Max = XMVector3TransformCoord(XMLoadFloat3(&object2->GetMax()), XMLoadFloat4x4(&object2->GetWorldTransform()->GetWorld()));
+	auto obj1World = object1->GetWorldTransform()->GetWorld();
+	auto obj2World = object2->GetWorldTransform()->GetWorld();
+	auto vert1Min = XMVectorAdd(XMVector4Transform(XMLoadFloat3(&object1->GetMin()), XMLoadFloat4x4(&obj1World)), object1->GetPosition()->GetPosition());
+	auto vert1Max = XMVectorAdd(XMVector4Transform(XMLoadFloat3(&object1->GetMax()), XMLoadFloat4x4(&obj1World)), object1->GetPosition()->GetPosition());
+	auto vert2Min = XMVectorAdd(XMVector4Transform(XMLoadFloat3(&object2->GetMin()), XMLoadFloat4x4(&obj2World)), object2->GetPosition()->GetPosition());
+	auto vert2Max = XMVectorAdd(XMVector4Transform(XMLoadFloat3(&object2->GetMax()), XMLoadFloat4x4(&obj2World)), object2->GetPosition()->GetPosition());
 
-	if (XMVectorGetX(vert1Max) > XMVectorGetX(vert2Min))
-		if (XMVectorGetX(vert1Min) < XMVectorGetX(vert2Max))
-			if (XMVectorGetY(vert1Max) < XMVectorGetY(vert2Min))
-				if (XMVectorGetY(vert1Min) < XMVectorGetY(vert2Max))
-					if (XMVectorGetZ(vert1Max) < XMVectorGetZ(vert2Min))
-						if (XMVectorGetZ(vert1Min) < XMVectorGetZ(vert2Max))
-							return true;
-	return false;
+	DebugPrint(std::string("\t\t Vert1Min: " + ToString(&vert1Min) + "\n"));
+	DebugPrint(std::string("\t\t Vert1Max: " + ToString(&vert1Max) + "\n"));
+	DebugPrint(std::string("\t\t Vert2Min: " + ToString(&vert2Min) + "\n"));
+	DebugPrint(std::string("\t\t Vert2Max: " + ToString(&vert2Max) + "\n"));
+
+	if (XMVectorGetX(vert1Max) < XMVectorGetX(vert2Min) || XMVectorGetX(vert1Min) > XMVectorGetX(vert2Max)) return false;
+	if (XMVectorGetY(vert1Max) < XMVectorGetY(vert2Min) || XMVectorGetY(vert1Min) > XMVectorGetY(vert2Max)) return false;
+	if (XMVectorGetZ(vert1Max) < XMVectorGetZ(vert2Min) || XMVectorGetZ(vert1Min) > XMVectorGetZ(vert2Max)) return false;
+	return true;
 }

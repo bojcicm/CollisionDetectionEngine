@@ -6,6 +6,15 @@ using namespace DirectX;
 namespace vxe {
 	class CollisionObject {
 	public:
+		void InitBoundingBox()
+		{
+			auto floatMax = std::numeric_limits<float>::max();
+			auto floatMin = std::numeric_limits<float>::lowest();
+
+			vertexMin = DirectX::XMFLOAT3(floatMax, floatMax, floatMax);
+			vertexMax = DirectX::XMFLOAT3(floatMin, floatMin, floatMin);
+		}
+
 		void UpdateBoundingBox(XMFLOAT3 vertex)
 		{
 			if (vertex.x < vertexMin.x) 

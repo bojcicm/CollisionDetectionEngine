@@ -25,7 +25,6 @@ namespace vxe {
 		void Update(DX::StepTimer const&);
 		void UpdateBuffers(_In_ ID3D11DeviceContext2* context);
 		void Render(_In_ ID3D11DeviceContext2* context);
-		void RenderMesh(_In_ ID3D11DeviceContext2* context, const shared_ptr<Md5Mesh>& mesh);
 		
 		void Reset()
 		{
@@ -44,6 +43,8 @@ namespace vxe {
 
 		task<void> LoadMd5Model(ID3D11Device2 * device, wstring filename);
 		task<void> LoadMd5Animation(wstring filename);
+
+		void RenderMesh(_In_ ID3D11DeviceContext2* context, const shared_ptr<Md5Mesh>& mesh);
 
 		int m_numberOfMeshes;
 		int m_numberOfJoints;

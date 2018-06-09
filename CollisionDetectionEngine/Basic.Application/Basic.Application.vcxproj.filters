@@ -17,6 +17,9 @@
     <Image Include="Assets\SplashScreen.png">
       <Filter>Assets</Filter>
     </Image>
+    <Filter Include="Renderer">
+      <UniqueIdentifier>{36b6847f-c675-4bd5-b6b2-76f4520dceb6}</UniqueIdentifier>
+    </Filter>
     <Filter Include="Shaders">
       <UniqueIdentifier>{cc2f1153-68a0-4b4d-9024-690a148a55b6}</UniqueIdentifier>
     </Filter>
@@ -26,20 +29,8 @@
     <Filter Include="Shaders\ComputeShader">
       <UniqueIdentifier>{2b541e35-1d2b-4781-87b1-522ece56652c}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Renderer">
-      <UniqueIdentifier>{36b6847f-c675-4bd5-b6b2-76f4520dceb6}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Renderer\RenderToTexture">
-      <UniqueIdentifier>{ed4836f4-8f01-4a76-a2d1-4fab4411db41}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Shaders\ToTextureShaders">
       <UniqueIdentifier>{95410a98-d6e9-4df6-ab8f-b1446eb913d3}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Renderer\ComputeBlur">
-      <UniqueIdentifier>{52002166-1460-4de8-9feb-721e2084c9af}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Renderer\RenderToScreen">
-      <UniqueIdentifier>{db484fe2-e99c-4995-8dd0-1af3b9ba45d5}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
