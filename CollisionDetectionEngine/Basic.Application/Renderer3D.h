@@ -6,10 +6,10 @@
 
 #include "..\..\..\Engine\Pipeline Stages\Shaders\Vertex Shader.h"
 #include "..\..\..\Engine\Pipeline Stages\Shaders\Pixel Shader.h"
-#include "..\..\Engine\Compute Shader.h"
+#include "..\..\..\Engine\Pipeline Stages\Shaders\Compute Shader.h"
 
 #include "..\..\..\Engine\Models\Mesh Base.h"
-#include "..\..\Engine\Models\Basic Shapes\Cubes.h"
+#include "..\..\..\Engine\Models\Basic Shapes\Cubes.h"
 #include "..\..\..\Engine\Models\MD5Model\Md5Model.h"
 #include "..\..\..\Engine\Models\MD5Model\CubeObject.h"
 

@@ -2,8 +2,8 @@
 
 #include "pch.h"
 
-#include "Utilities.h"
-#include "Models\Mesh Base.h"
+#include "..\Utilities.h"
+#include "Mesh Base.h"
 
 namespace vxe {
 	template <typename T, typename U> class FullScreenQuad : public MeshBase<T, U> {};

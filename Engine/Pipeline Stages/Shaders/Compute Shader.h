@@ -10,10 +10,10 @@
 #pragma once
 
 #include "pch.h"
-#include "Utilities.h"
+#include "..\..\Utilities.h"
 
-#include "Pipeline Stages\Shaders\Shader Base.h"
-#include "Core\Common\DirectXHelper.h"
+#include "Shader Base.h"
+#include "..\..\Core\Common\DirectXHelper.h"
 
 namespace vxe {
 

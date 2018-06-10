@@ -71,6 +71,9 @@
     <Filter Include="Models\Generated Shapes">
       <UniqueIdentifier>{ad6734d5-9dc2-4a04-ad1a-1f541bc2fe1b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Models\Md5Model">
+      <UniqueIdentifier>{f8f23bbb-f6cf-44ad-ac85-513d16331314}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp" />
@@ -113,8 +116,12 @@
     <ClCompile Include="Scene\Input\Input Controller.cpp">
       <Filter>Scene\Input</Filter>
     </ClCompile>
-    <ClCompile Include="Models\MD5Model\Md5Model.cpp" />
-    <ClCompile Include="Models\MD5Model\Md5Animation.cpp" />
+    <ClCompile Include="Models\MD5Model\Md5Animation.cpp">
+      <Filter>Models\Md5Model</Filter>
+    </ClCompile>
+    <ClCompile Include="Models\MD5Model\Md5Model.cpp">
+      <Filter>Models\Md5Model</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -253,22 +260,42 @@
     <ClInclude Include="Models\Generated Shapes\Grid.h">
       <Filter>Models\Generated Shapes</Filter>
     </ClInclude>
-    <ClInclude Include="FullScreenQuad.h">
+    <ClInclude Include="Models\MD5Model\CollisionObject.h">
+      <Filter>Models\Md5Model</Filter>
+    </ClInclude>
+    <ClInclude Include="Models\MD5Model\CubeObject.h">
+      <Filter>Models\Md5Model</Filter>
+    </ClInclude>
+    <ClInclude Include="Models\MD5Model\GameObject.h">
+      <Filter>Models\Md5Model</Filter>
+    </ClInclude>
+    <ClInclude Include="Models\MD5Model\Md5Animation.h">
+      <Filter>Models\Md5Model</Filter>
+    </ClInclude>
+    <ClInclude Include="Models\MD5Model\Md5AnimationSkeletonMesh.h">
+      <Filter>Models\Md5Model</Filter>
+    </ClInclude>
+    <ClInclude Include="Models\MD5Model\Md5AnimationStructs.h">
+      <Filter>Models\Md5Model</Filter>
+    </ClInclude>
+    <ClInclude Include="Models\MD5Model\Md5BoundingBoxMesh.h">
+      <Filter>Models\Md5Model</Filter>
+    </ClInclude>
+    <ClInclude Include="Models\MD5Model\Md5Mesh.h">
+      <Filter>Models\Md5Model</Filter>
+    </ClInclude>
+    <ClInclude Include="Models\MD5Model\Md5Model.h">
+      <Filter>Models\Md5Model</Filter>
+    </ClInclude>
+    <ClInclude Include="Models\MD5Model\Md5Structs.h">
+      <Filter>Models\Md5Model</Filter>
+    </ClInclude>
+    <ClInclude Include="Models\FullScreenQuad.h">
       <Filter>Models\Standard Models</Filter>
     </ClInclude>
-    <ClInclude Include="Compute Shader.h">
+    <ClInclude Include="Pipeline Stages\Shaders\Compute Shader.h">
       <Filter>Pipeline Stages\Shaders</Filter>
     </ClInclude>
-    <ClInclude Include="Models\MD5Model\Md5Model.h" />
-    <ClInclude Include="Models\MD5Model\Md5Mesh.h" />
-    <ClInclude Include="Models\MD5Model\Md5Structs.h" />
-    <ClInclude Include="Models\MD5Model\Md5AnimationStructs.h" />
-    <ClInclude Include="Models\MD5Model\Md5Animation.h" />
-    <ClInclude Include="Models\MD5Model\Md5AnimationSkeletonMesh.h" />
-    <ClInclude Include="Models\MD5Model\Md5BoundingBoxMesh.h" />
-    <ClInclude Include="Models\MD5Model\CollisionObject.h" />
-    <ClInclude Include="Models\MD5Model\GameObject.h" />
-    <ClInclude Include="Models\MD5Model\CubeObject.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Lighting\HLSL\Directional Light.hlsli">

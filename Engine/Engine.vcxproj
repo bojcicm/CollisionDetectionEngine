@@ -203,7 +203,7 @@
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="Compute Shader.h" />
+    <ClInclude Include="Pipeline Stages\Shaders\Compute Shader.h" />
     <ClInclude Include="Core\App.h" />
     <ClInclude Include="Core\Application Factory.h" />
     <ClInclude Include="Core\Common\DeviceResources.h" />
@@ -213,7 +213,7 @@
     <ClInclude Include="Core\Content\RendererBase3D.h" />
     <ClInclude Include="Core\Content\SampleFpsTextRenderer.h" />
     <ClInclude Include="Core\Engine Main.h" />
-    <ClInclude Include="FullScreenQuad.h" />
+    <ClInclude Include="Models\FullScreenQuad.h" />
     <ClInclude Include="Helpers.h" />
     <ClInclude Include="Lighting\Directional Light.h" />
     <ClInclude Include="Lighting\Light Base.h" />
