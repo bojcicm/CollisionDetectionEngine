@@ -17,7 +17,8 @@ namespace vxe {
 		void Update(float deltaTime);
 		void UpdateBuffers(_In_ ID3D11DeviceContext2* context);
 		// Draw the animated skeleton
-		void Render(_In_ ID3D11DeviceContext2* context);
+		void RenderBoundingBox(_In_ ID3D11DeviceContext2* context);
+		void RenderSkeleton(_In_ ID3D11DeviceContext2* context);
 		
 		void Reset()
 		{

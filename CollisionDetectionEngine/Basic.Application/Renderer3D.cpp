@@ -16,16 +16,36 @@ void Renderer3D::CreateDeviceDependentResources()
 	tasks.push_back(_vertexshader->CreateAsync(device, L"VertexShader.cso"));
 	_pixelshader = make_shared<PixelShader>();
 	tasks.push_back(_pixelshader->CreateAsync(device, L"PixelShader.cso"));
-	
+
 	_model = make_shared<MD5Model>();
-	auto modelTasks = _model->CreateAsync(device, L"boblampclean.md5mesh", L"boblampclean.md5anim");
-	tasks.insert(tasks.begin(), modelTasks.begin(), modelTasks.end());
-
-	_cube = make_shared<CubeObject>();
-	auto cubeTask = _cube->CreateAsync(device);
-	tasks.push_back(cubeTask);
-
 	_world = make_shared<WorldTransforms>(device);
+
+	switch (exampleNumber)
+	{
+	case REFERENT_POSE_LOAD:
+	{
+		auto modelTasks = _model->CreateAsync(device, L"boblampclean.md5mesh");
+		tasks.insert(tasks.begin(), modelTasks.begin(), modelTasks.end());
+		break;
+	}
+	case ANIMATION_SKELETON_LOAD:
+	{
+		auto modelTasks = _model->CreateAsync(device, L"boblampclean.md5mesh", L"boblampclean.md5anim");
+		tasks.insert(tasks.begin(), modelTasks.begin(), modelTasks.end());
+		break;
+	}
+	case CDE_EXAMPLE:
+	{
+		auto modelTasks = _model->CreateAsync(device, L"boblampclean.md5mesh", L"boblampclean.md5anim");
+		tasks.insert(tasks.begin(), modelTasks.begin(), modelTasks.end());
+		_cube = make_shared<CubeObject>();
+		auto cubeTask = _cube->CreateAsync(device);
+		tasks.push_back(cubeTask);
+		break;
+	}
+	default:
+		break;
+	}
 
 	when_all(tasks.end(), tasks.end()).then([this]()
 	{
@@ -69,21 +89,25 @@ void Renderer3D::Update(DX::StepTimer const& timer)
 	_model->Update(timer);
 	_model->UpdateBuffers(context);
 
-	DebugPrint(std::string("Renderer3D::Update()->IsCollision: " + BoolToString(isCollision) + "\n"));
-	if (!isCollision)
+	if (exampleNumber == CDE_EXAMPLE)
 	{
-		_cube->PositionDiff(0.07f, 0.0f, 0.0f);
-		_cube->UpdateLocalWorld();
-	}
+		DebugPrint(std::string("Renderer3D::Update()->IsCollision: " + BoolToString(isCollision) + "\n"));
+		if (!isCollision)
+		{
+			_cube->PositionDiff(0.07f, 0.0f, 0.0f);
+			_cube->UpdateLocalWorld();
+			isCollision = BoundingBoxCollisionTest(_model, _cube);
+		}
 
-	isCollision = BoundingBoxCollisionTest(_model, _cube);
-	if (isCollision)
-	{
-		DebugPrint(std::string("Collision happening\n"));
-	}
-	else
-	{
-		DebugPrint(std::string("No Collision\n"));
+		//isCollision = BoundingBoxCollisionTest(_model, _cube);
+		if (isCollision)
+		{
+			DebugPrint(std::string("Collision happening\n"));
+		}
+		else
+		{
+			DebugPrint(std::string("No Collision\n"));
+		}
 	}
 }
 
@@ -99,8 +123,14 @@ void Renderer3D::Render()
 	_vertexshader->Bind(context);
 	_pixelshader->Bind(context);
 
-	_model->Render(context);
-	_cube->Render(context);
+	if (exampleNumber == CDE_EXAMPLE)
+	{
+		_model->Render(context, true);
+		_cube->Render(context);
+	}
+	else
+		_model->Render(context);
+
 
 	m_deviceResources->SetRasterizerState();
 }
@@ -115,7 +145,9 @@ void Renderer3D::ReleaseDeviceDependentResources()
 	_world->Reset();
 
 	_model->Reset();
-	_cube->Reset();
+
+	if (exampleNumber == CDE_EXAMPLE)
+		_cube->Reset();
 }
 
 bool Renderer3D::BoundingBoxCollisionTest(shared_ptr<GameObject> object1, shared_ptr<GameObject> object2)

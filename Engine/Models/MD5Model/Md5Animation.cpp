@@ -308,15 +308,18 @@ namespace vxe {
 		frameBoundingBox.max.z = max0.z + (fInterpolate * (max1.z - max0.z));
 	}
 
-	void Md5Animation::Render(_In_ ID3D11DeviceContext2* context)
+	void Md5Animation::RenderBoundingBox(_In_ ID3D11DeviceContext2* context)
+	{
+		_animationBoundingBox->BindVertexBuffer(context);
+		_animationBoundingBox->BindIndexBuffer(context);
+		_animationBoundingBox->DrawIndexed(context);
+	}
+
+	void Md5Animation::RenderSkeleton(_In_ ID3D11DeviceContext2* context)
 	{
 		_animationMesh->BindVertexBuffer(context);
 		_animationMesh->BindIndexBuffer(context);
 		_animationMesh->DrawIndexed(context);
-
-		/*_animationBoundingBox->BindVertexBuffer(context);
-		_animationBoundingBox->BindIndexBuffer(context);
-		_animationBoundingBox->DrawIndexed(context);*/
 	}
 
 	void Md5Animation::UpdateBuffers(_In_ ID3D11DeviceContext2* context)

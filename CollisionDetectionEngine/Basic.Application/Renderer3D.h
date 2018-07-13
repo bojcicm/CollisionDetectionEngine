@@ -19,6 +19,13 @@
 
 using namespace vxe;
 
+enum PRESENTATION_EXAMPLE
+{
+	REFERENT_POSE_LOAD = 0,
+	ANIMATION_SKELETON_LOAD = 1,
+	CDE_EXAMPLE = 2
+};
+
 class Renderer3D :public RendererBase3D
 {
 public:
@@ -33,9 +40,11 @@ public:
 	std::shared_ptr<ProjectionTransform> _projection;
 
 	Renderer3D() :RendererBase3D()
-		,isCollision(false)
+		, isCollision(false)
+		, exampleNumber(CDE_EXAMPLE)
 	{
 		DebugPrint(std::string("Renderer3D::Ctor called\n"));
+		
 	}
 	void CreateDeviceDependentResources();
 	void CreateWindowSizeDependentResources();
@@ -59,4 +68,5 @@ private:
 	}
 
 	bool isCollision;
+	PRESENTATION_EXAMPLE exampleNumber;
 };

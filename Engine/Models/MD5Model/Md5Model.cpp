@@ -30,10 +30,11 @@ namespace vxe {
 		{
 			m->UpdateVertexBuffer(context);
 		}
-		_animation->UpdateBuffers(context);
+		if(m_hasAnimation)
+			_animation->UpdateBuffers(context);
 	}
 
-	void MD5Model::Render(_In_ ID3D11DeviceContext2* context)
+	void MD5Model::Render(_In_ ID3D11DeviceContext2* context, bool shouldRenderBoundingBox)
 	{
 		_localWorld->Update(context);
 		_localWorld->GetConstantBuffer()->Bind(context);
@@ -42,9 +43,12 @@ namespace vxe {
 			RenderMesh(context, m);
 		}
 
-		//if(false)
-		if(m_hasAnimation)
-			_animation->Render(context);
+		if (m_hasAnimation)
+		{
+			_animation->RenderSkeleton(context);
+			if (shouldRenderBoundingBox)
+				_animation->RenderBoundingBox(context);
+		}
 	}
 
 	void MD5Model::RenderMesh(_In_ ID3D11DeviceContext2* context, const std::shared_ptr<Md5Mesh>& mesh)

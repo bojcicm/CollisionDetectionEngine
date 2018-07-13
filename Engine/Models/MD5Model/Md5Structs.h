@@ -22,7 +22,6 @@ namespace vxe
 		int jointId;
 		float bias;
 		XMFLOAT3 position;
-		XMFLOAT3 normal;
 	};
 
 	struct VertexWeightInfo
